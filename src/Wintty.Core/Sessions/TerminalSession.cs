@@ -75,6 +75,27 @@ public sealed class TerminalSession : IDisposable
         _pty.Input.Flush();
     }
 
+    /// <summary>Encodes a key event with the terminal's current modes and sends the result to the process.</summary>
+    /// <param name="input">The key event.</param>
+    /// <returns><see langword="true"/> if the event produced output that was sent.</returns>
+    public bool SendKey(Input.KeyInput input)
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        byte[] bytes;
+        lock (_engineLock)
+        {
+            bytes = Engine.EncodeKey(input);
+        }
+
+        if (bytes.Length == 0)
+        {
+            return false;
+        }
+
+        SendInput(bytes);
+        return true;
+    }
+
     /// <summary>Resizes both the pseudo-terminal and the terminal engine.</summary>
     /// <param name="columns">New width in cells.</param>
     /// <param name="rows">New height in cells.</param>

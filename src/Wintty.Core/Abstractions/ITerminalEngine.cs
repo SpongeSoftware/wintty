@@ -19,6 +19,14 @@ public interface ITerminalEngine : IDisposable
     /// <param name="data">The bytes to process.</param>
     void Write(ReadOnlySpan<byte> data);
 
+    /// <summary>
+    /// Encodes a keyboard event into the bytes the running program expects, honouring the terminal's current
+    /// modes (application cursor keys, kitty keyboard protocol and so on).
+    /// </summary>
+    /// <param name="input">The key event.</param>
+    /// <returns>The bytes to send to the program; empty when the event produces no output.</returns>
+    byte[] EncodeKey(Input.KeyInput input);
+
     /// <summary>Captures the current screen contents for drawing.</summary>
     /// <returns>An immutable snapshot; safe to use after further writes.</returns>
     TerminalSnapshot CreateSnapshot();

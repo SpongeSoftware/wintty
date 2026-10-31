@@ -1,5 +1,6 @@
 using System.Text;
 using Wintty.Core.Abstractions;
+using Wintty.Core.Input;
 
 namespace Wintty.Tests.Fakes;
 
@@ -45,6 +46,16 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
     {
         Columns = columns;
         Rows = rows;
+    }
+
+    public List<KeyInput> KeyInputs { get; } = [];
+
+    public byte[] EncodedKey { get; set; } = [];
+
+    public byte[] EncodeKey(KeyInput input)
+    {
+        KeyInputs.Add(input);
+        return EncodedKey;
     }
 
     public TerminalSnapshot CreateSnapshot()

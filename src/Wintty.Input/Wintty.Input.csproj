@@ -1,0 +1,12 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Pure mapping from platform key codes to Core key types. No UI or native dependencies. -->
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Wintty.Core\Wintty.Core.csproj" />
+  </ItemGroup>
+
+</Project>

@@ -2,6 +2,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using LibGhostty;
 using Wintty.Core.Abstractions;
+using Wintty.Core.Input;
 
 namespace Wintty.Ghostty;
 
@@ -10,12 +11,15 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 {
     private const int WideCell = 1;
     private const int SpacerTailCell = 2;
+    private const int MaxEncodedKeyLength = 128;
 
     private readonly GhosttyNativeLibrary _native;
     private IntPtr _handle;
     private IntPtr _renderState;
     private IntPtr _rowIterator;
     private IntPtr _rowCells;
+    private IntPtr _keyEncoder;
+    private IntPtr _keyEvent;
 
     internal GhosttyTerminalEngine(GhosttyNativeLibrary native, TerminalEngineOptions options)
     {
@@ -37,6 +41,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             ThrowIfFailed(native.RenderStateNew(out _renderState), "create render state");
             ThrowIfFailed(native.RowIteratorNew(out _rowIterator), "create row iterator");
             ThrowIfFailed(native.RowCellsNew(out _rowCells), "create row cells");
+            ThrowIfFailed(native.KeyEncoderNew(out _keyEncoder), "create key encoder");
+            ThrowIfFailed(native.KeyEventNew(out _keyEvent), "create key event");
         }
         catch
         {
@@ -97,6 +103,35 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     }
 
     /// <inheritdoc />
+    public unsafe byte[] EncodeKey(KeyInput input)
+    {
+        ThrowIfDisposed();
+
+        // Sync cursor-key mode, kitty flags and other modes from the terminal before every encode.
+        _native.KeyEncoderSetFromTerminal(_keyEncoder, _handle);
+        _native.KeyEventSetAction(_keyEvent, GhosttyKeyMap.ToNative(input.Action));
+        _native.KeyEventSetKey(_keyEvent, GhosttyKeyMap.ToNative(input.Key));
+        _native.KeyEventSetMods(_keyEvent, GhosttyKeyMap.ToNative(input.Modifiers));
+        _native.KeyEventSetConsumedMods(_keyEvent, GhosttyKeyMap.ToNative(input.ConsumedModifiers));
+        _native.KeyEventSetUnshiftedCodepoint(_keyEvent, (uint)Math.Max(0, input.UnshiftedCodepoint));
+
+        var text = string.IsNullOrEmpty(input.Text) ? [] : Encoding.UTF8.GetBytes(input.Text);
+        Span<byte> buffer = stackalloc byte[MaxEncodedKeyLength];
+        nuint written;
+        int status;
+        fixed (byte* textPointer = text)
+        fixed (byte* bufferPointer = buffer)
+        {
+            // The text pointer must stay valid until the encode call has finished.
+            _native.KeyEventSetUtf8(_keyEvent, text.Length == 0 ? IntPtr.Zero : (IntPtr)textPointer, (nuint)text.Length);
+            status = _native.KeyEncoderEncode(_keyEncoder, _keyEvent, (IntPtr)bufferPointer, (nuint)buffer.Length, out written);
+        }
+
+        ThrowIfFailed(status, "encode key");
+        return buffer[..(int)written].ToArray();
+    }
+
+    /// <inheritdoc />
     public TerminalSnapshot CreateSnapshot()
     {
         ThrowIfDisposed();
@@ -144,6 +179,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             return;
         }
 
+        FreeAndClear(ref _keyEvent, _native.KeyEventFree);
+        FreeAndClear(ref _keyEncoder, _native.KeyEncoderFree);
         FreeAndClear(ref _rowCells, _native.RowCellsFree);
         FreeAndClear(ref _rowIterator, _native.RowIteratorFree);
         FreeAndClear(ref _renderState, _native.RenderStateFree);

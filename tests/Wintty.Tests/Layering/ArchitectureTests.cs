@@ -74,9 +74,16 @@ public class ArchitectureTests
                 Assert.DoesNotContain("ProjectReference", text);
             }
 
-            if (name is "Wintty.Ghostty" or "Wintty.Render")
+            if (name is "Wintty.Ghostty" or "Wintty.Render" or "Wintty.Input")
             {
                 Assert.DoesNotContain("Wintty.App", text);
+            }
+
+            if (name is "Wintty.Input")
+            {
+                // Input maps platform key codes to Core types only.
+                Assert.DoesNotContain("Wintty.Ghostty", text);
+                Assert.DoesNotContain("Wintty.Render", text);
             }
         }
     }
