@@ -18,6 +18,7 @@ public readonly record struct BackgroundRun(int Row, int Column, int Length, Ter
 /// <param name="Bold">Draw with a bold weight.</param>
 /// <param name="Italic">Draw with an italic slant.</param>
 /// <param name="Faint">Draw with reduced intensity.</param>
+/// <param name="Role">Which font to draw with.</param>
 public readonly record struct TextRun(
     int Row,
     int Column,
@@ -26,7 +27,8 @@ public readonly record struct TextRun(
     TerminalColor Color,
     bool Bold,
     bool Italic,
-    bool Faint);
+    bool Faint,
+    FontRole Role = FontRole.Primary);
 
 /// <summary>The kind of line drawn over or under text.</summary>
 public enum DecorationKind
