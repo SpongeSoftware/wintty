@@ -1,0 +1,7 @@
+# Every change needs review from a code owner (enforced by the main-branch ruleset).
+* @ElCapitanSponge
+
+# Release and security automation deserve explicit owner review.
+/.github/ @ElCapitanSponge
+/scripts/ @ElCapitanSponge
+/SECURITY.md @ElCapitanSponge
