@@ -12,7 +12,7 @@ description: Testing, documentation, layering and dependency rules for wintty.
 ## Documentation
 
 - Every public type and member has XML doc comments (`GenerateDocumentationFile` is on; missing docs are build errors in CI).
-- Architectural decisions are recorded under `docs/` and in `tasks/`.
+- Architectural decisions are recorded under `docs/` (ADRs) and discussed in GitHub issues.
 
 ## Layering and abstraction
 

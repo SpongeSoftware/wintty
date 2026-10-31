@@ -57,7 +57,7 @@ When adding behaviour, put it in the lowest layer that can own it and expose it 
 ## Where things live
 
 - `src/` projects, `tests/Wintty.Tests` (xUnit), `docs/` (Astro Starlight site, published to GitHub Pages), `scripts/` (release helpers), `.github/` (workflows, CODEOWNERS, templates).
-- Work items are tracked as GitHub issues (see `docs/agents/issue-tracker.md`). The `tasks/` folder holds legacy specs until they are migrated.
+- Work items are tracked as GitHub issues (see `docs/agents/issue-tracker.md`); the backlog is at https://github.com/SpongeSoftware/wintty/issues.
 - Human contributor guidance is in `CONTRIBUTING.md`; this file is for agents.
 
 ## Agent skills

@@ -26,7 +26,7 @@ Requirements: Windows 11, .NET SDK 10+, Windows App SDK, Visual Studio 2022 (or 
 dotnet build wintty.sln
 ```
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) and the [`tasks/`](tasks) directory for the roadmap.
+See [CONTRIBUTING.md](CONTRIBUTING.md) and the [open issues](https://github.com/SpongeSoftware/wintty/issues) for the roadmap.
 
 ## Versioning and commits
 
