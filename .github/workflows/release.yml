@@ -13,7 +13,7 @@ jobs:
     runs-on: windows-latest
     strategy:
       matrix:
-        arch: [x64, arm64]
+        arch: [x64]
     steps:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
@@ -65,7 +65,7 @@ jobs:
         uses: anchore/sbom-action/download-syft@v0
       - name: Generate SBOMs
         run: |
-          for arch in x64 arm64; do
+          for arch in x64; do
             syft "dir:dist/wintty-$arch/wintty-$arch" \
               -o spdx-json="out/wintty-${{ steps.ver.outputs.version }}-win-$arch.spdx.json" \
               -o cyclonedx-json="out/wintty-${{ steps.ver.outputs.version }}-win-$arch.cdx.json"

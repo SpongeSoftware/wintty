@@ -4,7 +4,7 @@ Status: todo (draft in `.github/workflows/release.yml`)
 
 **Goal:** tag `vX.Y.Z` produces a GitHub Release.
 
-**Scope:** x64/arm64 self-contained publish, portable zips, SHA256SUMS, Syft SBOMs (SPDX + CycloneDX) per arch, git-cliff release notes and CHANGELOG, winget manifests (`scripts/make-winget-manifest.py`), prerelease flag for tags with a suffix, version injected from tag.
+**Scope:** x64 self-contained publish (arm64 deferred, see task 15), portable zips, SHA256SUMS, Syft SBOMs (SPDX + CycloneDX) per arch, git-cliff release notes and CHANGELOG, winget manifests (`scripts/make-winget-manifest.py`), prerelease flag for tags with a suffix, version injected from tag.
 
 **Acceptance:**
 - Test tag on a scratch repo yields release with zips, SBOMs, checksums, manifests and notes.

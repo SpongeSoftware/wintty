@@ -4,7 +4,7 @@ Status: todo
 
 **Goal:** managed API over libghostty-vt in `Wintty.Core`.
 
-**Scope:** evaluate `LibGhostty.Net`; if insufficient, build ghostty-vt for win-x64/arm64 with zig (pinned ref, script in `scripts/`) and P/Invoke it. Expose: create terminal, write bytes, resize, read render state (rows, cells, styles, cursor, dirty rows), scrollback, key/mouse encoders, title/bell/clipboard callbacks.
+**Scope:** evaluate `LibGhostty.Net`; if insufficient, build ghostty-vt for win-x64 with zig (arm64 deferred, task 15) (pinned ref, script in `scripts/`) and P/Invoke it. Expose: create terminal, write bytes, resize, read render state (rows, cells, styles, cursor, dirty rows), scrollback, key/mouse encoders, title/bell/clipboard callbacks.
 
 **Constraint:** all libghostty / NuGet access goes through ONE gateway class implementing `ITerminalEngine` (see task 14). Nothing else may reference the native library or package; add the architecture test in the same change. Full unit tests using a fake engine for consumers, and tests for the adapter itself.
 

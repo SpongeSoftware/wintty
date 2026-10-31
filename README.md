@@ -16,7 +16,7 @@ wintty is an independent project, not affiliated with the Ghostty project.
 
 ## Install
 
-Downloads are published on the [GitHub Releases](../../releases) page and on the documentation site. Each release includes portable x64 and arm64 zips, SPDX/CycloneDX SBOMs, checksums and a winget manifest.
+Downloads are published on the [GitHub Releases](../../releases) page and on the documentation site. Each release includes a portable x64 zip, SPDX/CycloneDX SBOMs, checksums and a winget manifest.
 
 ## Build
 

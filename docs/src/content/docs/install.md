@@ -3,7 +3,7 @@ title: Install
 description: Install wintty on Windows.
 ---
 
-wintty is distributed as a portable zip for Windows 11 (x64 and arm64).
+wintty is distributed as a portable zip for Windows 11 (x64; arm64 is planned but not yet supported).
 
 1. Download the zip for your architecture from the [Download](../download/) page.
 2. Verify it against `SHA256SUMS.txt` from the same release.

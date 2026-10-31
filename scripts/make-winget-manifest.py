@@ -3,7 +3,7 @@
 import argparse
 import pathlib
 
-ARCHES = {"x64": "x64", "arm64": "arm64"}
+ARCHES = {"x64": "x64"}  # arm64 deferred: LibGhostty.Net ships win-x64 natives only
 ID = "wintty.wintty"
 
 
