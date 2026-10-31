@@ -13,8 +13,10 @@ using Windows.System;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Windows.UI;
 using Wintty.Core.Abstractions;
+using Wintty.Core.Input;
 using Wintty.Core.Sessions;
 using Wintty.Ghostty;
+using Wintty.Input;
 using Wintty.Render;
 
 namespace Wintty.App;
@@ -56,6 +58,7 @@ public sealed partial class TerminalControl : UserControl
         Canvas.CreateResources += (_, _) => MeasureCell();
         Canvas.SizeChanged += OnCanvasSizeChanged;
         KeyDown += OnKeyDown;
+        KeyUp += OnKeyUp;
         CharacterReceived += OnCharacterReceived;
         Loaded += async (_, _) => await StartAsync();
         Unloaded += (_, _) => Shutdown();
@@ -330,38 +333,70 @@ public sealed partial class TerminalControl : UserControl
         }
     }
 
-    // Placeholder input: special keys and text only. Task 09 replaces this with libghostty's key encoder.
-    private void OnKeyDown(object sender, KeyRoutedEventArgs e)
-    {
-        var sequence = e.Key switch
-        {
-            VirtualKey.Enter => "\r",
-            VirtualKey.Back => "\x7f",
-            VirtualKey.Tab => "\t",
-            VirtualKey.Escape => "\x1b",
-            VirtualKey.Up => "\x1b[A",
-            VirtualKey.Down => "\x1b[B",
-            VirtualKey.Right => "\x1b[C",
-            VirtualKey.Left => "\x1b[D",
-            VirtualKey.Home => "\x1b[H",
-            VirtualKey.End => "\x1b[F",
-            VirtualKey.Delete => "\x1b[3~",
-            VirtualKey.PageUp => "\x1b[5~",
-            VirtualKey.PageDown => "\x1b[6~",
-            _ => null,
-        };
+    private void OnKeyDown(object sender, KeyRoutedEventArgs e) =>
+        HandleKey(e, e.KeyStatus.WasKeyDown ? KeyAction.Repeat : KeyAction.Press);
 
-        if (sequence is not null)
+    private void OnKeyUp(object sender, KeyRoutedEventArgs e) => HandleKey(e, KeyAction.Release);
+
+    private void HandleKey(KeyRoutedEventArgs e, KeyAction action)
+    {
+        var virtualKey = (int)e.Key;
+
+        // While an IME is composing, the text arrives through CharacterReceived instead.
+        if (_session is null || virtualKey == VirtualKeyMap.ProcessKey)
         {
-            Send(sequence);
-            e.Handled = true;
+            return;
         }
+
+        var key = VirtualKeyMap.Map(virtualKey, e.KeyStatus.IsExtendedKey);
+        if (key == TerminalKey.Unidentified)
+        {
+            return;
+        }
+
+        var modifiers = NativeKeyboard.CurrentModifiers();
+        var text = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, modifiers);
+        if (text is null)
+        {
+            // Dead key (for example an accent): let the composed character arrive via CharacterReceived.
+            return;
+        }
+
+        var consumed = KeyModifiers.None;
+        if (text.Length > 0 && text[0] >= ' ' && text[0] != '')
+        {
+            // AltGr is reported as Ctrl+Alt; the layout already folded it into the text.
+            if (modifiers.HasFlag(KeyModifiers.Control) && modifiers.HasFlag(KeyModifiers.Alt))
+            {
+                modifiers &= ~(KeyModifiers.Control | KeyModifiers.Alt);
+            }
+
+            if (modifiers.HasFlag(KeyModifiers.Shift))
+            {
+                consumed = KeyModifiers.Shift;
+            }
+        }
+        else
+        {
+            // Control characters (Ctrl+C and friends) are derived by the encoder from key and modifiers.
+            text = null;
+        }
+
+        var unshifted = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, KeyModifiers.None);
+        var codepoint = string.IsNullOrEmpty(unshifted) || unshifted[0] < ' ' ? 0 : char.ConvertToUtf32(unshifted, 0);
+
+        _session.SendKey(new KeyInput(key, modifiers, action, text, codepoint, consumed));
+        _cursorOn = true;
+
+        // Handled so the same key does not also arrive through CharacterReceived.
+        e.Handled = true;
     }
 
+    // Reached only for text the key handler did not take: IME composition, dead-key results and unmapped keys.
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
         var character = e.Character;
-        if (character is '\r' or '\t' or '\b' or '\x1b' or '\x7f')
+        if (character < ' ' || character == '')
         {
             return;
         }
@@ -373,10 +408,10 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var text = char.IsLowSurrogate(character) && _pendingHighSurrogate != '\0'
+        var text = char.IsLowSurrogate(character) && _pendingHighSurrogate != ' '
             ? new string([_pendingHighSurrogate, character])
             : character.ToString();
-        _pendingHighSurrogate = '\0';
+        _pendingHighSurrogate = ' ';
         Send(text);
         e.Handled = true;
     }

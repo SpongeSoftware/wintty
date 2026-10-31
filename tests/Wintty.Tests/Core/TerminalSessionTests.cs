@@ -1,5 +1,6 @@
 using System.Text;
 using Wintty.Core.Abstractions;
+using Wintty.Core.Input;
 using Wintty.Core.Sessions;
 using Wintty.Tests.Fakes;
 using Xunit;
@@ -176,5 +177,44 @@ public class TerminalSessionTests
         {
             Assert.NotNull(session.SyncRoot);
         }
+    }
+
+    [Fact]
+    public async Task SendKey_EncodesWithEngineAndSendsToProcess()
+    {
+        var (session, engines, ptys) = await StartAsync();
+        using (session)
+        {
+            engines.Created[0].EncodedKey = "[A"u8.ToArray();
+            var input = new KeyInput(TerminalKey.ArrowUp);
+
+            Assert.True(session.SendKey(input));
+
+            Assert.Equal([input], engines.Created[0].KeyInputs);
+            Assert.Equal("[A", Encoding.UTF8.GetString(ptys.Connection.InputBuffer.ToArray()));
+        }
+    }
+
+    [Fact]
+    public async Task SendKey_WithNoOutput_SendsNothing()
+    {
+        var (session, engines, ptys) = await StartAsync();
+        using (session)
+        {
+            engines.Created[0].EncodedKey = [];
+
+            Assert.False(session.SendKey(new KeyInput(TerminalKey.ShiftLeft)));
+
+            Assert.Equal(0, ptys.Connection.InputBuffer.Length);
+        }
+    }
+
+    [Fact]
+    public async Task SendKey_AfterDispose_Throws()
+    {
+        var (session, _, _) = await StartAsync();
+        session.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => session.SendKey(new KeyInput(TerminalKey.A)));
     }
 }
