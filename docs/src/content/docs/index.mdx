@@ -1,0 +1,24 @@
+---
+title: wintty
+description: A native Windows terminal built on libghostty-vt.
+template: splash
+hero:
+  tagline: Ghostty's terminal core, native on Windows.
+  actions:
+    - text: Download
+      link: download/
+      icon: down-caret
+      variant: primary
+    - text: Get started
+      link: install/
+      variant: minimal
+---
+
+import { Card, CardGrid } from '@astrojs/starlight/components';
+
+<CardGrid>
+  <Card title="libghostty-vt core" icon="rocket">Accurate VT emulation and key encoding from Ghostty's terminal library.</Card>
+  <Card title="ConPTY shells" icon="seti:powershell">PowerShell, cmd and WSL.</Card>
+  <Card title="Tabs and splits" icon="laptop">Organise sessions in one window.</Card>
+  <Card title="Ghostty-style config" icon="setting">Plain `key = value` file with hot reload.</Card>
+</CardGrid>

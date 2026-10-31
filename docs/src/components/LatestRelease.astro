@@ -1,0 +1,31 @@
+---
+// Fetched at build time. docs.yml rebuilds on every published release.
+const repo = process.env.GITHUB_REPOSITORY ?? '';
+interface Asset { name: string; browser_download_url: string; size: number }
+let release: { tag_name: string; html_url: string; assets: Asset[] } | undefined;
+
+if (repo) {
+  try {
+    const headers: Record<string, string> = { Accept: 'application/vnd.github+json' };
+    if (process.env.GITHUB_TOKEN) headers.Authorization = `Bearer ${process.env.GITHUB_TOKEN}`;
+    const res = await fetch(`https://api.github.com/repos/${repo}/releases/latest`, { headers });
+    if (res.ok) release = await res.json();
+  } catch {
+    // fall through to the placeholder
+  }
+}
+const mb = (n: number) => `${(n / 1048576).toFixed(1)} MB`;
+---
+
+{release ? (
+  <div>
+    <p>Latest version: <strong>{release.tag_name}</strong> (<a href={release.html_url}>release notes</a>)</p>
+    <ul>
+      {release.assets.map((a) => (
+        <li><a href={a.browser_download_url}>{a.name}</a> ({mb(a.size)})</li>
+      ))}
+    </ul>
+  </div>
+) : (
+  <p>No release has been published yet. Check back soon.</p>
+)}
