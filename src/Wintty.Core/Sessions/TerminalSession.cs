@@ -12,12 +12,14 @@ public sealed class TerminalSession : IDisposable
     private readonly CancellationTokenSource _cts = new();
     private readonly Task _pump;
     private readonly object _engineLock = new();
+    private readonly object _inputLock = new();
     private int _disposed;
 
     private TerminalSession(ITerminalEngine engine, IPtyConnection pty)
     {
         Engine = engine;
         _pty = pty;
+        engine.ResponseHandler = OnEngineResponse;
         _pty.Exited += OnPtyExited;
         _pump = Task.Run(() => PumpAsync(_cts.Token));
     }
@@ -71,8 +73,38 @@ public sealed class TerminalSession : IDisposable
     public void SendInput(ReadOnlySpan<byte> data)
     {
         ObjectDisposedException.ThrowIf(_disposed != 0, this);
-        _pty.Input.Write(data);
-        _pty.Input.Flush();
+        WriteToProcess(data);
+    }
+
+    private void OnEngineResponse(ReadOnlySpan<byte> data)
+    {
+        if (_disposed != 0)
+        {
+            return;
+        }
+
+        try
+        {
+            WriteToProcess(data);
+        }
+        catch (IOException)
+        {
+            // The pseudo-terminal closed while a reply was being written; nobody is left to receive it.
+        }
+        catch (ObjectDisposedException)
+        {
+            // Same, when the stream was already disposed.
+        }
+    }
+
+    // Typing and terminal replies share one stream, so writes are serialised to keep each message contiguous.
+    private void WriteToProcess(ReadOnlySpan<byte> data)
+    {
+        lock (_inputLock)
+        {
+            _pty.Input.Write(data);
+            _pty.Input.Flush();
+        }
     }
 
     /// <summary>Encodes a key event with the terminal's current modes and sends the result to the process.</summary>
@@ -94,6 +126,18 @@ public sealed class TerminalSession : IDisposable
 
         SendInput(bytes);
         return true;
+    }
+
+    /// <summary>Tells the terminal how large one cell is in physical pixels (used for size query replies).</summary>
+    /// <param name="widthPixels">Cell width in pixels; must be positive.</param>
+    /// <param name="heightPixels">Cell height in pixels; must be positive.</param>
+    public void SetCellSize(int widthPixels, int heightPixels)
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            Engine.SetCellSize(widthPixels, heightPixels);
+        }
     }
 
     /// <summary>Resizes both the pseudo-terminal and the terminal engine.</summary>
@@ -121,6 +165,7 @@ public sealed class TerminalSession : IDisposable
         }
 
         _pty.Exited -= OnPtyExited;
+        Engine.ResponseHandler = null;
         _cts.Cancel();
         _pty.Kill();
         _pty.Dispose();

@@ -16,6 +16,24 @@ public class OptionsTests
         Assert.Throws<ArgumentOutOfRangeException>(() => new TerminalEngineOptions(columns, rows, scrollback).Validate());
 
     [Fact]
+    public void TerminalEngineOptions_DefaultColoursAreWhiteOnBlack()
+    {
+        var options = new TerminalEngineOptions(80, 24);
+
+        Assert.Equal(new TerminalColor(255, 255, 255), options.EffectiveForeground);
+        Assert.Equal(new TerminalColor(0, 0, 0), options.EffectiveBackground);
+    }
+
+    [Fact]
+    public void TerminalEngineOptions_UsesExplicitColours()
+    {
+        var options = new TerminalEngineOptions(80, 24, Foreground: new TerminalColor(1, 2, 3), Background: new TerminalColor(4, 5, 6));
+
+        Assert.Equal(new TerminalColor(1, 2, 3), options.EffectiveForeground);
+        Assert.Equal(new TerminalColor(4, 5, 6), options.EffectiveBackground);
+    }
+
+    [Fact]
     public void PtyStartOptions_AcceptsValidValuesAndHasDefaults()
     {
         var options = new PtyStartOptions("cmd.exe", 80, 24);
