@@ -28,10 +28,10 @@ Maintainers release by pushing a tag `vX.Y.Z`. The version is taken from the tag
 
 ## Engineering standards
 
-- **Tests:** aim for full coverage; new code ships with tests. Coverage is gated in CI.
+- **Tests:** aim for full coverage; new code ships with tests. CI enforces a minimum line coverage (currently 90%; raise it as coverage grows, never lower it).
 - **Docs:** every public type/member has XML docs (enforced for libraries).
-- **Layering:** `App` -> `Render`/`Pty` -> `Core`. Small interfaces, composition over inheritance.
-- **libghostty:** only the single gateway in `Wintty.Core` may reference libghostty-vt or its NuGet package.
+- **Layering:** `App` -> `Render`/`Ghostty` -> `Core`. Small interfaces, composition over inheritance.
+- **libghostty:** only the single gateway in `Wintty.Ghostty` may reference libghostty-vt or its NuGet package.
 
 See the docs site "Engineering standards" page for details.
 

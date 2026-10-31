@@ -1,8 +1,8 @@
 # 06 libghostty-vt binding
 
-Status: todo
+Status: partly done (abstractions, gateway, PTY hosting, title; render state, key and mouse encoders still to do)
 
-**Goal:** managed API over libghostty-vt in `Wintty.Core`.
+**Goal:** managed API over libghostty-vt: abstractions in `Wintty.Core`, the single gateway in `Wintty.Ghostty`.
 
 **Scope:** evaluate `LibGhostty.Net`; if insufficient, build ghostty-vt for win-x64 with zig (arm64 deferred, task 15) (pinned ref, script in `scripts/`) and P/Invoke it. Expose: create terminal, write bytes, resize, read render state (rows, cells, styles, cursor, dirty rows), scrollback, key/mouse encoders, title/bell/clipboard callbacks.
 

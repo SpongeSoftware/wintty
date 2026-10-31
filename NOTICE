@@ -9,3 +9,8 @@ the Ghostty project.
 
 (Verify the upstream LICENSE text and copyright line when vendoring or
 redistributing ghostty-vt binaries, and keep this file up to date.)
+
+LibGhostty.Net 1.0.2 - MIT License (https://github.com/jkelin/libghostty-net)
+Managed bindings and PTY host for libghostty-vt. The package redistributes native components from a
+Ghostty fork and Windows Terminal (conpty.dll, OpenConsole.exe, MIT); review their notices before
+redistributing binaries.

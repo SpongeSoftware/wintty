@@ -8,4 +8,6 @@ Status: todo
 
 **Acceptance:** integration test runs `cmd /c echo hi` and sees `hi` in the grid; resize while `pwsh` runs does not corrupt output (see ghostty-org/ghostty discussion #14291); clean shutdown with no leaked handles.
 
-**Files:** `src/Wintty.Pty`, `src/Wintty.Core/TerminalSession.cs`.
+**Files:** `src/Wintty.Core/Sessions/TerminalSession.cs`, `src/Wintty.Ghostty`.
+
+**Update:** `LibGhostty.Net` hosts ConPTY itself, so the separate `Wintty.Pty` project was removed. This task is now: the bits of PTY behaviour still wanted on top (debounced resize to work around ghostty-org/ghostty discussion #14291, shell profiles, working-directory inheritance), implemented in `Wintty.Core` against `IPtyConnection`.

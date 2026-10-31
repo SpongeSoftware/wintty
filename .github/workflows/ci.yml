@@ -34,9 +34,19 @@ jobs:
       - name: Build
         if: hashFiles('wintty.sln') != ''
         run: dotnet build wintty.sln -c Release
-      - name: Test
+      # Coverage gate: fails below the threshold. Raise it as coverage improves; never lower it.
+      - name: Test with coverage
         if: hashFiles('wintty.sln') != ''
-        run: dotnet test wintty.sln -c Release --no-build
+        run: >
+          dotnet test tests/Wintty.Tests -c Release
+          -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura
+          -p:CoverletOutput=../../artifacts/coverage/
+          -p:Threshold=90 -p:ThresholdType=line -p:ThresholdStat=total
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage
+          path: artifacts/coverage/
 
   docs:
     runs-on: ubuntu-latest

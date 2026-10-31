@@ -4,7 +4,7 @@ Status: done (retargeted to .NET 10)
 
 **Goal:** buildable solution with the version injected from the git tag.
 
-**Scope:** `wintty.sln`; projects `src/Wintty.Core`, `Wintty.Pty`, `Wintty.Render` (class libraries), `src/Wintty.App` (WinUI 3, unpackaged, self-contained), `tests/Wintty.Tests` (xUnit). `Directory.Build.props` already holds defaults.
+**Scope:** `wintty.sln`; projects `src/Wintty.Core`, `Wintty.Ghostty`, `Wintty.Render` (class libraries), `src/Wintty.App` (WinUI 3, unpackaged, self-contained), `tests/Wintty.Tests` (xUnit). `Directory.Build.props` already holds defaults.
 
 **Acceptance:**
 - `dotnet build wintty.sln` and `dotnet test` pass on windows-latest.
