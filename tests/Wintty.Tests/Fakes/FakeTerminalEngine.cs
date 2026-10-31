@@ -47,6 +47,15 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
         Rows = rows;
     }
 
+    public TerminalSnapshot CreateSnapshot()
+    {
+        var black = new TerminalColor(0, 0, 0);
+        var white = new TerminalColor(255, 255, 255);
+        var cells = new TerminalCell[Columns * Rows];
+        Array.Fill(cells, new TerminalCell(string.Empty, white, black));
+        return new TerminalSnapshot(Columns, Rows, cells, new CursorState(0, 0, true, CursorStyle.Block), white, black);
+    }
+
     public void Dispose() => IsDisposed = true;
 }
 

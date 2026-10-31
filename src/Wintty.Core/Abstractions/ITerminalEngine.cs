@@ -19,6 +19,10 @@ public interface ITerminalEngine : IDisposable
     /// <param name="data">The bytes to process.</param>
     void Write(ReadOnlySpan<byte> data);
 
+    /// <summary>Captures the current screen contents for drawing.</summary>
+    /// <returns>An immutable snapshot; safe to use after further writes.</returns>
+    TerminalSnapshot CreateSnapshot();
+
     /// <summary>Resizes the grid.</summary>
     /// <param name="columns">New width in cells; must be positive.</param>
     /// <param name="rows">New height in cells; must be positive.</param>
