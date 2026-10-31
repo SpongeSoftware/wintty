@@ -57,5 +57,19 @@ When adding behaviour, put it in the lowest layer that can own it and expose it 
 ## Where things live
 
 - `src/` projects, `tests/Wintty.Tests` (xUnit), `docs/` (Astro Starlight site, published to GitHub Pages), `scripts/` (release helpers), `.github/` (workflows, CODEOWNERS, templates).
-- Work items are tracked as GitHub issues. The `tasks/` folder holds legacy specs until they are migrated.
+- Work items are tracked as GitHub issues (see `docs/agents/issue-tracker.md`). The `tasks/` folder holds legacy specs until they are migrated.
 - Human contributor guidance is in `CONTRIBUTING.md`; this file is for agents.
+
+## Agent skills
+
+### Issue tracker
+
+Issues are tracked as GitHub Issues on `SpongeSoftware/wintty`, using the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The default triage vocabulary: `needs-triage`, `needs-info`, `ready-for-agent`, `ready-for-human`, `wontfix`. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: one `GLOSSARY.md` and `docs/adr/` at the repository root, created lazily by `/domain-modeling`. See `docs/agents/domain.md`.
