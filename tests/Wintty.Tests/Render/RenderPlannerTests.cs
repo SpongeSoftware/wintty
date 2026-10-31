@@ -176,6 +176,37 @@ public class RenderPlannerTests
     }
 
     [Fact]
+    public void Decorations_UnderlineUsesItsOwnColourWhenSet()
+    {
+        var cell = new TerminalCell("a", Fg, Bg, CellAttributes.None, UnderlineStyle.Curly, 1, Red);
+
+        var plan = RenderPlanner.Build(Row(cell));
+
+        Assert.Equal(new DecorationRun(0, 0, 1, DecorationKind.CurlyUnderline, Red), Assert.Single(plan.Decorations));
+    }
+
+    [Fact]
+    public void Decorations_UnderlineColourDoesNotAffectStrikethrough()
+    {
+        var cell = new TerminalCell("a", Fg, Bg, CellAttributes.Strikethrough, UnderlineStyle.Single, 1, Red);
+
+        var plan = RenderPlanner.Build(Row(cell));
+
+        Assert.Equal(Red, plan.Decorations.Single(d => d.Kind == DecorationKind.Underline).Color);
+        Assert.Equal(Fg, plan.Decorations.Single(d => d.Kind == DecorationKind.Strikethrough).Color);
+    }
+
+    [Fact]
+    public void Decorations_DifferentUnderlineColoursDoNotMerge()
+    {
+        var plan = RenderPlanner.Build(Row(
+            new TerminalCell("a", Fg, Bg, CellAttributes.None, UnderlineStyle.Single, 1, Red),
+            new TerminalCell("b", Fg, Bg, CellAttributes.None, UnderlineStyle.Single, 1, Blue)));
+
+        Assert.Equal(2, plan.Decorations.Count);
+    }
+
+    [Fact]
     public void Decorations_StrikethroughAndOverlineAreEmitted()
     {
         var plan = RenderPlanner.Build(Row(Ch("a", attributes: CellAttributes.Strikethrough | CellAttributes.Overline)));

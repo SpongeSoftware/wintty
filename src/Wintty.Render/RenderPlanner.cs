@@ -159,7 +159,7 @@ public static class RenderPlanner
             var color = cell.EffectiveForeground;
             if (cell.Underline != UnderlineStyle.None)
             {
-                Add(output, row, column, cell.Width, ToKind(cell.Underline), color);
+                Add(output, row, column, cell.Width, ToKind(cell.Underline), cell.UnderlineColor ?? color);
             }
 
             if (cell.Attributes.HasFlag(CellAttributes.Strikethrough))
