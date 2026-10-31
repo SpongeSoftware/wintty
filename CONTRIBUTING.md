@@ -34,6 +34,7 @@ Maintainers release by pushing a tag `vX.Y.Z`. The version is taken from the tag
 
 - **Tests:** aim for full coverage; new code ships with tests. CI enforces a minimum line coverage (currently 90%; raise it as coverage grows, never lower it).
 - **Docs:** every public type/member has XML docs (enforced for libraries).
+- **Supply chain:** third-party GitHub Actions are pinned to commit SHAs (Dependabot updates them); CodeQL (GitHub default setup), dependency review and OpenSSF Scorecard run in CI.
 - **Layering:** `App` -> `Render`/`Ghostty` -> `Core`. Small interfaces, composition over inheritance.
 - **libghostty:** only the single gateway in `Wintty.Ghostty` may reference libghostty-vt or its NuGet package.
 
