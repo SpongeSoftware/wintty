@@ -1,0 +1,2638 @@
+{
+  "Wintty.Core.dll": {
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Core\\VersionInfo.cs": {
+      "Wintty.Core.VersionInfo": {
+        "System.String Wintty.Core.VersionInfo::get_Current()": {
+          "Lines": {
+            "9": 3
+          },
+          "Branches": []
+        },
+        "System.String Wintty.Core.VersionInfo::Resolve(System.Reflection.Assembly)": {
+          "Lines": {
+            "13": 4,
+            "14": 4,
+            "16": 1,
+            "20": 3,
+            "21": 3
+          },
+          "Branches": [
+            {
+              "Line": 13,
+              "Offset": 7,
+              "EndOffset": 9,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 13,
+              "Offset": 7,
+              "EndOffset": 13,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            },
+            {
+              "Line": 14,
+              "Offset": 25,
+              "EndOffset": 27,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 16,
+              "Offset": 39,
+              "EndOffset": 41,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 0
+            },
+            {
+              "Line": 16,
+              "Offset": 39,
+              "EndOffset": 45,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 1
+            },
+            {
+              "Line": 16,
+              "Offset": 52,
+              "EndOffset": 54,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 0
+            },
+            {
+              "Line": 16,
+              "Offset": 52,
+              "EndOffset": 60,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 1
+            },
+            {
+              "Line": 14,
+              "Offset": 25,
+              "EndOffset": 61,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 3
+            },
+            {
+              "Line": 21,
+              "Offset": 72,
+              "EndOffset": 74,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 1
+            },
+            {
+              "Line": 21,
+              "Offset": 72,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 2
+            }
+          ]
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Core\\Sessions\\TerminalSession.cs": {
+      "Wintty.Core.Sessions.TerminalSession": {
+        "Wintty.Core.Abstractions.ITerminalEngine Wintty.Core.Sessions.TerminalSession::get_Engine()": {
+          "Lines": {
+            "32": 73
+          },
+          "Branches": []
+        },
+        "System.Object Wintty.Core.Sessions.TerminalSession::get_SyncRoot()": {
+          "Lines": {
+            "35": 51
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Core.Sessions.TerminalSession::SendInput(System.ReadOnlySpan`1<System.Byte>)": {
+          "Lines": {
+            "73": 2,
+            "74": 1,
+            "75": 1,
+            "76": 1
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Core.Sessions.TerminalSession::Resize(System.Int32,System.Int32)": {
+          "Lines": {
+            "83": 5,
+            "84": 4,
+            "85": 2,
+            "86": 1,
+            "88": 1,
+            "89": 1,
+            "91": 1,
+            "92": 1
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Core.Sessions.TerminalSession::Dispose()": {
+          "Lines": {
+            "97": 14,
+            "99": 1,
+            "102": 13,
+            "103": 13,
+            "104": 13,
+            "105": 13,
+            "108": 13,
+            "109": 13,
+            "110": 0,
+            "113": 0,
+            "115": 13,
+            "117": 13,
+            "118": 13,
+            "120": 13,
+            "121": 13
+          },
+          "Branches": [
+            {
+              "Line": 97,
+              "Offset": 12,
+              "EndOffset": 14,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 97,
+              "Offset": 12,
+              "EndOffset": 15,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 13
+            }
+          ]
+        },
+        "System.Void Wintty.Core.Sessions.TerminalSession::OnPtyExited(System.Object,System.Int32)": {
+          "Lines": {
+            "163": 2
+          },
+          "Branches": [
+            {
+              "Line": 163,
+              "Offset": 7,
+              "EndOffset": 9,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 163,
+              "Offset": 7,
+              "EndOffset": 11,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Threading.Tasks.Task Wintty.Core.Sessions.TerminalSession::<.ctor>b__5_0()": {
+          "Lines": {
+            "22": 26
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Core.Sessions.TerminalSession::.ctor(Wintty.Core.Abstractions.ITerminalEngine,Wintty.Core.Abstractions.IPtyConnection)": {
+          "Lines": {
+            "12": 13,
+            "14": 13,
+            "17": 13,
+            "19": 13,
+            "20": 13,
+            "21": 13,
+            "23": 13
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Core.Sessions.TerminalSession/<PumpAsync>d__21": {
+        "System.Void Wintty.Core.Sessions.TerminalSession/<PumpAsync>d__21::MoveNext()": {
+          "Lines": {
+            "125": 13,
+            "128": 21,
+            "130": 18,
+            "131": 10,
+            "136": 8,
+            "138": 8,
+            "140": 0,
+            "143": 8,
+            "144": 8,
+            "146": 8,
+            "148": 5,
+            "149": 8,
+            "152": 8,
+            "153": 0,
+            "156": 0,
+            "157": 0,
+            "160": 0,
+            "161": 13
+          },
+          "Branches": [
+            {
+              "Line": 128,
+              "Offset": 289,
+              "EndOffset": 42,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 18
+            },
+            {
+              "Line": 131,
+              "Offset": 176,
+              "EndOffset": 178,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 8
+            },
+            {
+              "Line": 138,
+              "Offset": 204,
+              "EndOffset": 206,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 0
+            },
+            {
+              "Line": 138,
+              "Offset": 204,
+              "EndOffset": 208,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 8
+            },
+            {
+              "Line": 146,
+              "Offset": 262,
+              "EndOffset": 264,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 7
+            },
+            {
+              "Line": 146,
+              "Offset": 262,
+              "EndOffset": 267,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 1
+            },
+            {
+              "Line": 131,
+              "Offset": 176,
+              "EndOffset": 294,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 5
+            },
+            {
+              "Line": 128,
+              "Offset": 289,
+              "EndOffset": 294,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 5
+            }
+          ]
+        }
+      },
+      "Wintty.Core.Sessions.TerminalSession/<StartAsync>d__17": {
+        "System.Void Wintty.Core.Sessions.TerminalSession/<StartAsync>d__17::MoveNext()": {
+          "Lines": {
+            "51": 18,
+            "52": 17,
+            "53": 16,
+            "54": 15,
+            "56": 14,
+            "59": 14,
+            "60": 13,
+            "62": 1,
+            "64": 1,
+            "65": 1,
+            "67": 13
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Core\\Abstractions\\PtyStartOptions.cs": {
+      "Wintty.Core.Abstractions.PtyStartOptions": {
+        "System.String Wintty.Core.Abstractions.PtyStartOptions::get_Application()": {
+          "Lines": {
+            "7": 104
+          },
+          "Branches": []
+        },
+        "System.Collections.Generic.IReadOnlyList`1<System.String> Wintty.Core.Abstractions.PtyStartOptions::get_Arguments()": {
+          "Lines": {
+            "10": 14
+          },
+          "Branches": []
+        },
+        "System.String Wintty.Core.Abstractions.PtyStartOptions::get_WorkingDirectory()": {
+          "Lines": {
+            "13": 3
+          },
+          "Branches": []
+        },
+        "System.Collections.Generic.IReadOnlyDictionary`2<System.String,System.String> Wintty.Core.Abstractions.PtyStartOptions::get_Environment()": {
+          "Lines": {
+            "16": 3
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Core.Abstractions.PtyStartOptions::Validate()": {
+          "Lines": {
+            "23": 22,
+            "24": 21,
+            "25": 18,
+            "26": 17
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Core\\Abstractions\\TerminalEngineOptions.cs": {
+      "Wintty.Core.Abstractions.TerminalEngineOptions": {
+        "System.Int32 Wintty.Core.Abstractions.TerminalEngineOptions::get_Columns()": {
+          "Lines": {
+            "7": 253
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Core.Abstractions.TerminalEngineOptions::Validate()": {
+          "Lines": {
+            "13": 27,
+            "14": 25,
+            "15": 24,
+            "16": 23
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Core\\Abstractions\\TerminalSnapshot.cs": {
+      "Wintty.Core.Abstractions.TerminalColor": {
+        "System.Byte Wintty.Core.Abstractions.TerminalColor::get_Red()": {
+          "Lines": {
+            "9": 2
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Core.Abstractions.CursorState": {
+        "System.Int32 Wintty.Core.Abstractions.CursorState::get_Column()": {
+          "Lines": {
+            "86": 64
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Core.Abstractions.TerminalCell": {
+        "System.String Wintty.Core.Abstractions.TerminalCell::get_Text()": {
+          "Lines": {
+            "96": 370
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Core.Abstractions.TerminalCell::get_Foreground()": {
+          "Lines": {
+            "97": 181
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Core.Abstractions.TerminalCell::get_Background()": {
+          "Lines": {
+            "98": 135
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.CellAttributes Wintty.Core.Abstractions.TerminalCell::get_Attributes()": {
+          "Lines": {
+            "99": 706
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.UnderlineStyle Wintty.Core.Abstractions.TerminalCell::get_Underline()": {
+          "Lines": {
+            "100": 139
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Core.Abstractions.TerminalCell::get_Width()": {
+          "Lines": {
+            "101": 490
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Core.Abstractions.TerminalCell::get_EffectiveForeground()": {
+          "Lines": {
+            "104": 178
+          },
+          "Branches": [
+            {
+              "Line": 104,
+              "Offset": 23,
+              "EndOffset": 25,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 173
+            },
+            {
+              "Line": 104,
+              "Offset": 23,
+              "EndOffset": 32,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 5
+            }
+          ]
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Core.Abstractions.TerminalCell::get_EffectiveBackground()": {
+          "Lines": {
+            "107": 131
+          },
+          "Branches": [
+            {
+              "Line": 107,
+              "Offset": 23,
+              "EndOffset": 25,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 128
+            },
+            {
+              "Line": 107,
+              "Offset": 23,
+              "EndOffset": 32,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            }
+          ]
+        }
+      },
+      "Wintty.Core.Abstractions.TerminalSnapshot": {
+        "System.Int32 Wintty.Core.Abstractions.TerminalSnapshot::get_Columns()": {
+          "Lines": {
+            "149": 2110
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Core.Abstractions.TerminalSnapshot::get_Rows()": {
+          "Lines": {
+            "152": 691
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.CursorState Wintty.Core.Abstractions.TerminalSnapshot::get_Cursor()": {
+          "Lines": {
+            "155": 38
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Core.Abstractions.TerminalSnapshot::get_DefaultForeground()": {
+          "Lines": {
+            "158": 5
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Core.Abstractions.TerminalSnapshot::get_DefaultBackground()": {
+          "Lines": {
+            "161": 160
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalCell Wintty.Core.Abstractions.TerminalSnapshot::get_Item(System.Int32,System.Int32)": {
+          "Lines": {
+            "171": 588,
+            "172": 587,
+            "173": 586,
+            "174": 585,
+            "175": 584
+          },
+          "Branches": []
+        },
+        "System.String Wintty.Core.Abstractions.TerminalSnapshot::GetRowText(System.Int32)": {
+          "Lines": {
+            "183": 12,
+            "184": 378,
+            "186": 177,
+            "187": 177,
+            "192": 175,
+            "195": 12
+          },
+          "Branches": [
+            {
+              "Line": 184,
+              "Offset": 80,
+              "EndOffset": 16,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 177
+            },
+            {
+              "Line": 187,
+              "Offset": 32,
+              "EndOffset": 34,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 175
+            },
+            {
+              "Line": 192,
+              "Offset": 47,
+              "EndOffset": 49,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 26
+            },
+            {
+              "Line": 192,
+              "Offset": 47,
+              "EndOffset": 58,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 149
+            },
+            {
+              "Line": 187,
+              "Offset": 32,
+              "EndOffset": 69,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 177
+            },
+            {
+              "Line": 184,
+              "Offset": 80,
+              "EndOffset": 82,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 12
+            }
+          ]
+        },
+        "System.Void Wintty.Core.Abstractions.TerminalSnapshot::.ctor(System.Int32,System.Int32,Wintty.Core.Abstractions.TerminalCell[],Wintty.Core.Abstractions.CursorState,Wintty.Core.Abstractions.TerminalColor,Wintty.Core.Abstractions.TerminalColor)": {
+          "Lines": {
+            "124": 57,
+            "125": 57,
+            "126": 57,
+            "127": 57,
+            "128": 57,
+            "129": 57,
+            "130": 57,
+            "132": 57,
+            "133": 56,
+            "134": 55,
+            "135": 54,
+            "137": 1,
+            "140": 53,
+            "141": 53,
+            "142": 53,
+            "143": 53,
+            "144": 53,
+            "145": 53,
+            "146": 53
+          },
+          "Branches": [
+            {
+              "Line": 135,
+              "Offset": 47,
+              "EndOffset": 49,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 135,
+              "Offset": 47,
+              "EndOffset": 133,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 53
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Wintty.Ghostty.dll": {
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Ghostty\\GhosttyGateway.cs": {
+      "Wintty.Ghostty.GhosttyGateway": {
+        "Wintty.Core.Abstractions.ITerminalEngine Wintty.Ghostty.GhosttyGateway::Create(Wintty.Core.Abstractions.TerminalEngineOptions)": {
+          "Lines": {
+            "28": 24,
+            "29": 23,
+            "30": 22
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Ghostty.GhosttyGateway::.cctor()": {
+          "Lines": {
+            "13": 1,
+            "14": 1,
+            "15": 1,
+            "16": 1,
+            "17": 1,
+            "22": 1,
+            "23": 1
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Ghostty.GhosttyGateway/<StartAsync>d__3": {
+        "System.Void Wintty.Ghostty.GhosttyGateway/<StartAsync>d__3::MoveNext()": {
+          "Lines": {
+            "36": 4,
+            "37": 3,
+            "39": 2,
+            "40": 2,
+            "41": 2,
+            "42": 2,
+            "43": 2,
+            "44": 2,
+            "45": 2,
+            "46": 2,
+            "47": 2,
+            "48": 2,
+            "50": 2,
+            "51": 2,
+            "52": 2
+          },
+          "Branches": [
+            {
+              "Line": 39,
+              "Offset": 103,
+              "EndOffset": 105,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 39,
+              "Offset": 103,
+              "EndOffset": 111,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            },
+            {
+              "Line": 39,
+              "Offset": 163,
+              "EndOffset": 165,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 2
+            },
+            {
+              "Line": 39,
+              "Offset": 163,
+              "EndOffset": 171,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 2
+            }
+          ]
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Ghostty\\GhosttyPtyConnection.cs": {
+      "Wintty.Ghostty.GhosttyPtyConnection": {
+        "System.IO.Stream Wintty.Ghostty.GhosttyPtyConnection::get_Output()": {
+          "Lines": {
+            "22": 12
+          },
+          "Branches": []
+        },
+        "System.IO.Stream Wintty.Ghostty.GhosttyPtyConnection::get_Input()": {
+          "Lines": {
+            "25": 0
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Ghostty.GhosttyPtyConnection::get_ProcessId()": {
+          "Lines": {
+            "28": 1
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Ghostty.GhosttyPtyConnection::Resize(System.Int32,System.Int32)": {
+          "Lines": {
+            "31": 1
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Ghostty.GhosttyPtyConnection::Kill()": {
+          "Lines": {
+            "38": 2,
+            "39": 0,
+            "40": 2,
+            "43": 2,
+            "44": 2
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Ghostty.GhosttyPtyConnection::Dispose()": {
+          "Lines": {
+            "49": 2,
+            "50": 2,
+            "51": 2
+          },
+          "Branches": [
+            {
+              "Line": 50,
+              "Offset": 30,
+              "EndOffset": 32,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0
+            },
+            {
+              "Line": 50,
+              "Offset": 30,
+              "EndOffset": 34,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyPtyConnection::OnProcessExited(System.Object,LibGhostty.GhosttyPtyExitedEventArgs)": {
+          "Lines": {
+            "53": 2
+          },
+          "Branches": [
+            {
+              "Line": 53,
+              "Offset": 7,
+              "EndOffset": 9,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0
+            },
+            {
+              "Line": 53,
+              "Offset": 7,
+              "EndOffset": 11,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyPtyConnection::.ctor(LibGhostty.IGhosttyPtyConnection)": {
+          "Lines": {
+            "12": 2,
+            "14": 2,
+            "15": 2,
+            "16": 2
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Ghostty\\GhosttyTerminalEngine.cs": {
+      "Wintty.Ghostty.GhosttyTerminalEngine": {
+        "System.Int32 Wintty.Ghostty.GhosttyTerminalEngine::get_Columns()": {
+          "Lines": {
+            "49": 26
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Ghostty.GhosttyTerminalEngine::get_Rows()": {
+          "Lines": {
+            "52": 26
+          },
+          "Branches": []
+        },
+        "System.String Wintty.Ghostty.GhosttyTerminalEngine::get_Title()": {
+          "Lines": {
+            "59": 54,
+            "60": 53,
+            "61": 53,
+            "63": 51,
+            "66": 2
+          },
+          "Branches": [
+            {
+              "Line": 61,
+              "Offset": 25,
+              "EndOffset": 27,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 53
+            },
+            {
+              "Line": 61,
+              "Offset": 38,
+              "EndOffset": 40,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 53
+            },
+            {
+              "Line": 61,
+              "Offset": 25,
+              "EndOffset": 48,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 51
+            },
+            {
+              "Line": 61,
+              "Offset": 38,
+              "EndOffset": 48,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 51
+            },
+            {
+              "Line": 61,
+              "Offset": 46,
+              "EndOffset": 48,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 51
+            },
+            {
+              "Line": 61,
+              "Offset": 46,
+              "EndOffset": 50,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 2
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::Write(System.ReadOnlySpan`1<System.Byte>)": {
+          "Lines": {
+            "73": 23,
+            "74": 22,
+            "76": 1,
+            "79": 21,
+            "81": 21,
+            "83": 21
+          },
+          "Branches": [
+            {
+              "Line": 74,
+              "Offset": 13,
+              "EndOffset": 15,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 74,
+              "Offset": 13,
+              "EndOffset": 16,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 21
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::Resize(System.Int32,System.Int32)": {
+          "Lines": {
+            "88": 5,
+            "89": 4,
+            "90": 3,
+            "93": 2,
+            "94": 2,
+            "95": 2,
+            "96": 2,
+            "97": 2
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalSnapshot Wintty.Ghostty.GhosttyTerminalEngine::CreateSnapshot()": {
+          "Lines": {
+            "102": 17,
+            "103": 16,
+            "105": 16,
+            "106": 16,
+            "107": 16,
+            "108": 16,
+            "110": 16,
+            "111": 16,
+            "112": 16,
+            "113": 16,
+            "114": 16,
+            "116": 16,
+            "117": 98,
+            "119": 82,
+            "120": 82,
+            "121": 3540,
+            "123": 1688,
+            "126": 82,
+            "130": 32,
+            "132": 0,
+            "135": 16
+          },
+          "Branches": [
+            {
+              "Line": 117,
+              "Offset": 267,
+              "EndOffset": 168,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 82
+            },
+            {
+              "Line": 121,
+              "Offset": 241,
+              "EndOffset": 206,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1688
+            },
+            {
+              "Line": 121,
+              "Offset": 241,
+              "EndOffset": 243,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 82
+            },
+            {
+              "Line": 117,
+              "Offset": 252,
+              "EndOffset": 254,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 82
+            },
+            {
+              "Line": 117,
+              "Offset": 252,
+              "EndOffset": 269,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 16
+            },
+            {
+              "Line": 117,
+              "Offset": 267,
+              "EndOffset": 269,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 16
+            },
+            {
+              "Line": 130,
+              "Offset": 313,
+              "EndOffset": 277,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 0
+            },
+            {
+              "Line": 130,
+              "Offset": 313,
+              "EndOffset": 315,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 16
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::Dispose()": {
+          "Lines": {
+            "141": 23,
+            "142": 23,
+            "144": 1,
+            "147": 22,
+            "148": 22,
+            "149": 22,
+            "150": 22,
+            "151": 22
+          },
+          "Branches": [
+            {
+              "Line": 142,
+              "Offset": 23,
+              "EndOffset": 25,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 142,
+              "Offset": 23,
+              "EndOffset": 26,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 22
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::FreeAndClear(System.IntPtr&,System.Action`1<System.IntPtr>)": {
+          "Lines": {
+            "155": 66,
+            "157": 66,
+            "158": 66,
+            "160": 66
+          },
+          "Branches": [
+            {
+              "Line": 155,
+              "Offset": 7,
+              "EndOffset": 9,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 66
+            },
+            {
+              "Line": 155,
+              "Offset": 7,
+              "EndOffset": 24,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 66
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::ThrowIfFailed(System.Int32,System.String)": {
+          "Lines": {
+            "164": 1956,
+            "166": 0,
+            "168": 1956
+          },
+          "Branches": [
+            {
+              "Line": 164,
+              "Offset": 1,
+              "EndOffset": 3,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 0
+            },
+            {
+              "Line": 164,
+              "Offset": 1,
+              "EndOffset": 78,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1956
+            }
+          ]
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Ghostty.GhosttyTerminalEngine::ToColor(LibGhostty.GhosttyNativeLibrary/NativeColor)": {
+          "Lines": {
+            "170": 35
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Ghostty.GhosttyTerminalEngine::ReadStateColor(System.Int32)": {
+          "Lines": {
+            "174": 32,
+            "175": 32
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.CursorState Wintty.Ghostty.GhosttyTerminalEngine::ReadCursor()": {
+          "Lines": {
+            "180": 16,
+            "181": 16,
+            "182": 16,
+            "183": 16,
+            "184": 16,
+            "185": 16,
+            "187": 16,
+            "188": 16,
+            "191": 16,
+            "192": 16
+          },
+          "Branches": [
+            {
+              "Line": 185,
+              "Offset": 72,
+              "EndOffset": 74,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 16
+            },
+            {
+              "Line": 185,
+              "Offset": 72,
+              "EndOffset": 118,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 16
+            },
+            {
+              "Line": 191,
+              "Offset": 124,
+              "EndOffset": 126,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 0
+            },
+            {
+              "Line": 191,
+              "Offset": 124,
+              "EndOffset": 129,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 16
+            },
+            {
+              "Line": 192,
+              "Offset": 136,
+              "EndOffset": 138,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 15
+            },
+            {
+              "Line": 192,
+              "Offset": 136,
+              "EndOffset": 144,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 1
+            }
+          ]
+        },
+        "Wintty.Core.Abstractions.TerminalCell Wintty.Ghostty.GhosttyTerminalEngine::ReadCell(System.IntPtr,System.Int32,Wintty.Core.Abstractions.TerminalColor,Wintty.Core.Abstractions.TerminalColor)": {
+          "Lines": {
+            "197": 1688,
+            "199": 1688,
+            "200": 1688,
+            "201": 1688,
+            "203": 31,
+            "204": 31,
+            "206": 31,
+            "208": 31,
+            "213": 1688,
+            "214": 1688,
+            "215": 1688,
+            "216": 1688,
+            "217": 1688,
+            "218": 1688,
+            "220": 1688,
+            "221": 1688,
+            "222": 1688,
+            "224": 1688,
+            "225": 1688,
+            "228": 1688,
+            "229": 1688,
+            "230": 1688,
+            "232": 1688,
+            "233": 1688,
+            "234": 2,
+            "235": 2,
+            "236": 1684,
+            "237": 1688,
+            "240": 1688
+          },
+          "Branches": [
+            {
+              "Line": 200,
+              "Offset": 45,
+              "EndOffset": 47,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1688
+            },
+            {
+              "Line": 200,
+              "Offset": 49,
+              "EndOffset": 51,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 31
+            },
+            {
+              "Line": 204,
+              "Offset": 64,
+              "EndOffset": 66,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 31
+            },
+            {
+              "Line": 204,
+              "Offset": 64,
+              "EndOffset": 72,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 0
+            },
+            {
+              "Line": 204,
+              "Offset": 70,
+              "EndOffset": 72,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 0
+            },
+            {
+              "Line": 204,
+              "Offset": 70,
+              "EndOffset": 78,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 31
+            },
+            {
+              "Line": 206,
+              "Offset": 104,
+              "EndOffset": 106,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 31
+            },
+            {
+              "Line": 206,
+              "Offset": 104,
+              "EndOffset": 114,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 31
+            },
+            {
+              "Line": 200,
+              "Offset": 45,
+              "EndOffset": 117,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1688
+            },
+            {
+              "Line": 200,
+              "Offset": 49,
+              "EndOffset": 117,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 1688
+            },
+            {
+              "Line": 213,
+              "Offset": 132,
+              "EndOffset": 134,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 1686
+            },
+            {
+              "Line": 213,
+              "Offset": 132,
+              "EndOffset": 137,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 2
+            },
+            {
+              "Line": 216,
+              "Offset": 159,
+              "EndOffset": 161,
+              "Path": 0,
+              "Ordinal": 12,
+              "Hits": 1687
+            },
+            {
+              "Line": 216,
+              "Offset": 159,
+              "EndOffset": 165,
+              "Path": 1,
+              "Ordinal": 13,
+              "Hits": 1
+            },
+            {
+              "Line": 222,
+              "Offset": 194,
+              "EndOffset": 196,
+              "Path": 0,
+              "Ordinal": 14,
+              "Hits": 1688
+            },
+            {
+              "Line": 225,
+              "Offset": 217,
+              "EndOffset": 219,
+              "Path": 0,
+              "Ordinal": 16,
+              "Hits": 0
+            },
+            {
+              "Line": 225,
+              "Offset": 217,
+              "EndOffset": 222,
+              "Path": 1,
+              "Ordinal": 17,
+              "Hits": 1688
+            },
+            {
+              "Line": 222,
+              "Offset": 194,
+              "EndOffset": 231,
+              "Path": 1,
+              "Ordinal": 15,
+              "Hits": 1688
+            },
+            {
+              "Line": 229,
+              "Offset": 248,
+              "EndOffset": 250,
+              "Path": 0,
+              "Ordinal": 18,
+              "Hits": 1688
+            },
+            {
+              "Line": 229,
+              "Offset": 265,
+              "EndOffset": 267,
+              "Path": 0,
+              "Ordinal": 20,
+              "Hits": 1688
+            },
+            {
+              "Line": 232,
+              "Offset": 270,
+              "EndOffset": 272,
+              "Path": 0,
+              "Ordinal": 22,
+              "Hits": 1686
+            },
+            {
+              "Line": 232,
+              "Offset": 270,
+              "EndOffset": 279,
+              "Path": 1,
+              "Ordinal": 23,
+              "Hits": 2
+            },
+            {
+              "Line": 232,
+              "Offset": 275,
+              "EndOffset": 284,
+              "Path": 1,
+              "Ordinal": 25,
+              "Hits": 2
+            },
+            {
+              "Line": 232,
+              "Offset": 275,
+              "EndOffset": 289,
+              "Path": 0,
+              "Ordinal": 24,
+              "Hits": 1684
+            },
+            {
+              "Line": 229,
+              "Offset": 248,
+              "EndOffset": 296,
+              "Path": 1,
+              "Ordinal": 19,
+              "Hits": 1688
+            },
+            {
+              "Line": 229,
+              "Offset": 265,
+              "EndOffset": 296,
+              "Path": 1,
+              "Ordinal": 21,
+              "Hits": 1688
+            }
+          ]
+        },
+        "System.String Wintty.Ghostty.GhosttyTerminalEngine::ToText(System.UInt32[])": {
+          "Lines": {
+            "245": 31,
+            "246": 124,
+            "248": 31,
+            "250": 31,
+            "254": 31
+          },
+          "Branches": [
+            {
+              "Line": 246,
+              "Offset": 48,
+              "EndOffset": 15,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 31
+            },
+            {
+              "Line": 248,
+              "Offset": 25,
+              "EndOffset": 27,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 31
+            },
+            {
+              "Line": 248,
+              "Offset": 25,
+              "EndOffset": 40,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 31
+            },
+            {
+              "Line": 246,
+              "Offset": 48,
+              "EndOffset": 50,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 31
+            }
+          ]
+        },
+        "Wintty.Core.Abstractions.CellAttributes Wintty.Ghostty.GhosttyTerminalEngine::ToAttributes(LibGhostty.GhosttyNativeLibrary/NativeStyle)": {
+          "Lines": {
+            "259": 1688,
+            "260": 1689,
+            "261": 1689,
+            "262": 1688,
+            "263": 1688,
+            "264": 1689,
+            "265": 1688,
+            "266": 1689,
+            "267": 1688,
+            "268": 1688
+          },
+          "Branches": [
+            {
+              "Line": 260,
+              "Offset": 8,
+              "EndOffset": 10,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 260,
+              "Offset": 8,
+              "EndOffset": 14,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1688
+            },
+            {
+              "Line": 261,
+              "Offset": 20,
+              "EndOffset": 22,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 261,
+              "Offset": 20,
+              "EndOffset": 26,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 1688
+            },
+            {
+              "Line": 262,
+              "Offset": 32,
+              "EndOffset": 34,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 0
+            },
+            {
+              "Line": 262,
+              "Offset": 32,
+              "EndOffset": 38,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 1688
+            },
+            {
+              "Line": 263,
+              "Offset": 44,
+              "EndOffset": 46,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 0
+            },
+            {
+              "Line": 263,
+              "Offset": 44,
+              "EndOffset": 50,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 1688
+            },
+            {
+              "Line": 264,
+              "Offset": 56,
+              "EndOffset": 58,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 1
+            },
+            {
+              "Line": 264,
+              "Offset": 56,
+              "EndOffset": 63,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 1688
+            },
+            {
+              "Line": 265,
+              "Offset": 69,
+              "EndOffset": 71,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 0
+            },
+            {
+              "Line": 265,
+              "Offset": 69,
+              "EndOffset": 76,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 1688
+            },
+            {
+              "Line": 266,
+              "Offset": 82,
+              "EndOffset": 84,
+              "Path": 0,
+              "Ordinal": 12,
+              "Hits": 1
+            },
+            {
+              "Line": 266,
+              "Offset": 82,
+              "EndOffset": 89,
+              "Path": 1,
+              "Ordinal": 13,
+              "Hits": 1688
+            },
+            {
+              "Line": 267,
+              "Offset": 95,
+              "EndOffset": 97,
+              "Path": 0,
+              "Ordinal": 14,
+              "Hits": 0
+            },
+            {
+              "Line": 267,
+              "Offset": 95,
+              "EndOffset": 105,
+              "Path": 1,
+              "Ordinal": 15,
+              "Hits": 1688
+            }
+          ]
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::ThrowIfDisposed()": {
+          "Lines": {
+            "271": 99
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Ghostty.GhosttyTerminalEngine::.ctor(LibGhostty.GhosttyNativeLibrary,Wintty.Core.Abstractions.TerminalEngineOptions)": {
+          "Lines": {
+            "20": 22,
+            "22": 22,
+            "23": 22,
+            "24": 22,
+            "25": 22,
+            "26": 22,
+            "27": 22,
+            "28": 22,
+            "29": 22,
+            "30": 22,
+            "31": 22,
+            "32": 22,
+            "33": 22,
+            "37": 22,
+            "38": 22,
+            "39": 22,
+            "40": 22,
+            "41": 0,
+            "43": 0,
+            "44": 0,
+            "46": 22
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Ghostty\\NativeAssetLocator.cs": {
+      "Wintty.Ghostty.NativeAssetLocator": {
+        "System.String Wintty.Ghostty.NativeAssetLocator::Configure(System.String,System.Runtime.InteropServices.Architecture)": {
+          "Lines": {
+            "20": 7,
+            "22": 2,
+            "25": 5,
+            "26": 5,
+            "28": 1,
+            "31": 4,
+            "32": 4
+          },
+          "Branches": [
+            {
+              "Line": 20,
+              "Offset": 15,
+              "EndOffset": 17,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 2
+            },
+            {
+              "Line": 20,
+              "Offset": 15,
+              "EndOffset": 19,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 5
+            },
+            {
+              "Line": 26,
+              "Offset": 48,
+              "EndOffset": 50,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 26,
+              "Offset": 48,
+              "EndOffset": 52,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 4
+            }
+          ]
+        },
+        "System.String Wintty.Ghostty.NativeAssetLocator::RuntimeIdentifier(System.Runtime.InteropServices.Architecture)": {
+          "Lines": {
+            "35": 5,
+            "36": 5,
+            "37": 1,
+            "38": 4,
+            "39": 5
+          },
+          "Branches": [
+            {
+              "Line": 35,
+              "Offset": 2,
+              "EndOffset": 4,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 1
+            },
+            {
+              "Line": 35,
+              "Offset": 2,
+              "EndOffset": 12,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 4
+            }
+          ]
+        }
+      }
+    }
+  },
+  "Wintty.Render.dll": {
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Render\\GridSizer.cs": {
+      "Wintty.Render.GridSizer": {
+        "System.ValueTuple`2<System.Int32,System.Int32> Wintty.Render.GridSizer::Compute(System.Double,System.Double,System.Double,System.Double,System.Double)": {
+          "Lines": {
+            "21": 8,
+            "22": 6,
+            "23": 5,
+            "25": 4,
+            "26": 4,
+            "27": 4,
+            "28": 4,
+            "29": 4
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Render\\RenderPlan.cs": {
+      "Wintty.Render.BackgroundRun": {
+        "System.Int32 Wintty.Render.BackgroundRun::get_Row()": {
+          "Lines": {
+            "10": 1
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Render.TextRun": {
+        "System.Int32 Wintty.Render.TextRun::get_Row()": {
+          "Lines": {
+            "22": 0
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Render.TextRun::get_Column()": {
+          "Lines": {
+            "23": 4
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Render.TextRun::get_CellCount()": {
+          "Lines": {
+            "24": 3
+          },
+          "Branches": []
+        },
+        "System.String Wintty.Render.TextRun::get_Text()": {
+          "Lines": {
+            "25": 4
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Render.TextRun::get_Color()": {
+          "Lines": {
+            "26": 2
+          },
+          "Branches": []
+        },
+        "System.Boolean Wintty.Render.TextRun::get_Bold()": {
+          "Lines": {
+            "27": 2
+          },
+          "Branches": []
+        },
+        "System.Boolean Wintty.Render.TextRun::get_Italic()": {
+          "Lines": {
+            "28": 1
+          },
+          "Branches": []
+        },
+        "System.Boolean Wintty.Render.TextRun::get_Faint()": {
+          "Lines": {
+            "29": 1
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Render.DecorationRun": {
+        "System.Int32 Wintty.Render.DecorationRun::get_Row()": {
+          "Lines": {
+            "62": 27
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Render.CursorShape": {
+        "System.Int32 Wintty.Render.CursorShape::get_Row()": {
+          "Lines": {
+            "70": 1
+          },
+          "Branches": []
+        }
+      },
+      "Wintty.Render.RenderPlan": {
+        "System.Int32 Wintty.Render.RenderPlan::get_Columns()": {
+          "Lines": {
+            "81": 1
+          },
+          "Branches": []
+        },
+        "System.Int32 Wintty.Render.RenderPlan::get_Rows()": {
+          "Lines": {
+            "82": 1
+          },
+          "Branches": []
+        },
+        "Wintty.Core.Abstractions.TerminalColor Wintty.Render.RenderPlan::get_Background()": {
+          "Lines": {
+            "83": 1
+          },
+          "Branches": []
+        },
+        "System.Collections.Generic.IReadOnlyList`1<Wintty.Render.BackgroundRun> Wintty.Render.RenderPlan::get_Backgrounds()": {
+          "Lines": {
+            "84": 6
+          },
+          "Branches": []
+        },
+        "System.Collections.Generic.IReadOnlyList`1<Wintty.Render.TextRun> Wintty.Render.RenderPlan::get_Texts()": {
+          "Lines": {
+            "85": 20
+          },
+          "Branches": []
+        },
+        "System.Collections.Generic.IReadOnlyList`1<Wintty.Render.DecorationRun> Wintty.Render.RenderPlan::get_Decorations()": {
+          "Lines": {
+            "86": 10
+          },
+          "Branches": []
+        },
+        "System.Nullable`1<Wintty.Render.CursorShape> Wintty.Render.RenderPlan::get_Cursor()": {
+          "Lines": {
+            "87": 38
+          },
+          "Branches": []
+        },
+        "System.Void Wintty.Render.RenderPlan::.ctor(System.Int32,System.Int32,Wintty.Core.Abstractions.TerminalColor,System.Collections.Generic.IReadOnlyList`1<Wintty.Render.BackgroundRun>,System.Collections.Generic.IReadOnlyList`1<Wintty.Render.TextRun>,System.Collections.Generic.IReadOnlyList`1<Wintty.Render.DecorationRun>,System.Nullable`1<Wintty.Render.CursorShape>)": {
+          "Lines": {
+            "80": 29
+          },
+          "Branches": []
+        }
+      }
+    },
+    "C:\\Users\\andre\\personal\\wintty\\src\\Wintty.Render\\RenderPlanner.cs": {
+      "Wintty.Render.RenderPlanner": {
+        "Wintty.Render.RenderPlan Wintty.Render.RenderPlanner::Build(Wintty.Core.Abstractions.TerminalSnapshot,System.Boolean)": {
+          "Lines": {
+            "17": 30,
+            "19": 29,
+            "20": 29,
+            "21": 29,
+            "23": 132,
+            "25": 37,
+            "26": 37,
+            "27": 37,
+            "30": 29,
+            "31": 29,
+            "32": 29,
+            "33": 29,
+            "34": 29,
+            "35": 29,
+            "36": 29,
+            "37": 29
+          },
+          "Branches": [
+            {
+              "Line": 23,
+              "Offset": 68,
+              "EndOffset": 33,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 37
+            },
+            {
+              "Line": 23,
+              "Offset": 68,
+              "EndOffset": 70,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 29
+            }
+          ]
+        },
+        "System.Void Wintty.Render.RenderPlanner::AddBackgrounds(Wintty.Core.Abstractions.TerminalSnapshot,System.Int32,System.Collections.Generic.List`1<Wintty.Render.BackgroundRun>)": {
+          "Lines": {
+            "42": 37,
+            "43": 37,
+            "44": 406,
+            "46": 166,
+            "47": 166,
+            "48": 166,
+            "50": 129,
+            "51": 129,
+            "54": 166,
+            "56": 7,
+            "57": 7,
+            "60": 166,
+            "62": 7,
+            "63": 7,
+            "66": 37
+          },
+          "Branches": [
+            {
+              "Line": 44,
+              "Offset": 125,
+              "EndOffset": 14,
+              "Path": 1,
+              "Ordinal": 13,
+              "Hits": 166
+            },
+            {
+              "Line": 48,
+              "Offset": 31,
+              "EndOffset": 33,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 129
+            },
+            {
+              "Line": 48,
+              "Offset": 31,
+              "EndOffset": 66,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 166
+            },
+            {
+              "Line": 54,
+              "Offset": 68,
+              "EndOffset": 70,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 9
+            },
+            {
+              "Line": 54,
+              "Offset": 71,
+              "EndOffset": 73,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 3
+            },
+            {
+              "Line": 54,
+              "Offset": 71,
+              "EndOffset": 83,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 7
+            },
+            {
+              "Line": 54,
+              "Offset": 81,
+              "EndOffset": 83,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 7
+            },
+            {
+              "Line": 54,
+              "Offset": 68,
+              "EndOffset": 102,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 166
+            },
+            {
+              "Line": 54,
+              "Offset": 81,
+              "EndOffset": 102,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 166
+            },
+            {
+              "Line": 60,
+              "Offset": 103,
+              "EndOffset": 105,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 9
+            },
+            {
+              "Line": 60,
+              "Offset": 107,
+              "EndOffset": 109,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 7
+            },
+            {
+              "Line": 60,
+              "Offset": 103,
+              "EndOffset": 114,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 166
+            },
+            {
+              "Line": 60,
+              "Offset": 107,
+              "EndOffset": 114,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 166
+            },
+            {
+              "Line": 44,
+              "Offset": 125,
+              "EndOffset": 127,
+              "Path": 0,
+              "Ordinal": 12,
+              "Hits": 37
+            }
+          ]
+        },
+        "System.Void Wintty.Render.RenderPlanner::AddTexts(Wintty.Core.Abstractions.TerminalSnapshot,System.Int32,System.Collections.Generic.List`1<Wintty.Render.TextRun>)": {
+          "Lines": {
+            "70": 37,
+            "71": 37,
+            "72": 37,
+            "73": 37,
+            "96": 332,
+            "98": 129,
+            "99": 129,
+            "104": 127,
+            "105": 127,
+            "107": 91,
+            "108": 91,
+            "112": 36,
+            "114": 3,
+            "115": 3,
+            "116": 3,
+            "117": 3,
+            "118": 3,
+            "119": 3,
+            "120": 3,
+            "123": 33,
+            "125": 3,
+            "128": 33,
+            "130": 26,
+            "131": 26,
+            "134": 33,
+            "135": 33,
+            "138": 37,
+            "139": 37
+          },
+          "Branches": [
+            {
+              "Line": 96,
+              "Offset": 356,
+              "EndOffset": 64,
+              "Path": 1,
+              "Ordinal": 15,
+              "Hits": 129
+            },
+            {
+              "Line": 99,
+              "Offset": 85,
+              "EndOffset": 90,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 127
+            },
+            {
+              "Line": 104,
+              "Offset": 103,
+              "EndOffset": 105,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 37
+            },
+            {
+              "Line": 104,
+              "Offset": 103,
+              "EndOffset": 134,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 90
+            },
+            {
+              "Line": 105,
+              "Offset": 135,
+              "EndOffset": 137,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 91
+            },
+            {
+              "Line": 105,
+              "Offset": 135,
+              "EndOffset": 149,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 36
+            },
+            {
+              "Line": 112,
+              "Offset": 157,
+              "EndOffset": 159,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 3
+            },
+            {
+              "Line": 112,
+              "Offset": 157,
+              "EndOffset": 229,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 33
+            },
+            {
+              "Line": 123,
+              "Offset": 241,
+              "EndOffset": 243,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 10
+            },
+            {
+              "Line": 123,
+              "Offset": 263,
+              "EndOffset": 265,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 3
+            },
+            {
+              "Line": 123,
+              "Offset": 241,
+              "EndOffset": 272,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 33
+            },
+            {
+              "Line": 123,
+              "Offset": 263,
+              "EndOffset": 272,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 33
+            },
+            {
+              "Line": 128,
+              "Offset": 284,
+              "EndOffset": 286,
+              "Path": 0,
+              "Ordinal": 12,
+              "Hits": 26
+            },
+            {
+              "Line": 128,
+              "Offset": 284,
+              "EndOffset": 307,
+              "Path": 1,
+              "Ordinal": 13,
+              "Hits": 33
+            },
+            {
+              "Line": 99,
+              "Offset": 85,
+              "EndOffset": 345,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 129
+            },
+            {
+              "Line": 96,
+              "Offset": 356,
+              "EndOffset": 361,
+              "Path": 0,
+              "Ordinal": 14,
+              "Hits": 37
+            }
+          ]
+        },
+        "System.Boolean Wintty.Render.RenderPlanner::SameTextStyle(Wintty.Core.Abstractions.TerminalCell,Wintty.Core.Abstractions.TerminalCell)": {
+          "Lines": {
+            "142": 10,
+            "143": 10,
+            "144": 10
+          },
+          "Branches": [
+            {
+              "Line": 142,
+              "Offset": 19,
+              "EndOffset": 21,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 7
+            },
+            {
+              "Line": 142,
+              "Offset": 19,
+              "EndOffset": 42,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 3
+            }
+          ]
+        },
+        "System.Void Wintty.Render.RenderPlanner::AddDecorations(Wintty.Core.Abstractions.TerminalSnapshot,System.Int32,System.Collections.Generic.List`1<Wintty.Render.DecorationRun>)": {
+          "Lines": {
+            "148": 332,
+            "150": 129,
+            "151": 129,
+            "156": 127,
+            "157": 127,
+            "159": 10,
+            "162": 127,
+            "164": 1,
+            "167": 127,
+            "169": 1,
+            "172": 37
+          },
+          "Branches": [
+            {
+              "Line": 148,
+              "Offset": 173,
+              "EndOffset": 7,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 129
+            },
+            {
+              "Line": 151,
+              "Offset": 23,
+              "EndOffset": 28,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 127
+            },
+            {
+              "Line": 157,
+              "Offset": 43,
+              "EndOffset": 45,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 10
+            },
+            {
+              "Line": 157,
+              "Offset": 43,
+              "EndOffset": 73,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 127
+            },
+            {
+              "Line": 162,
+              "Offset": 97,
+              "EndOffset": 99,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 1
+            },
+            {
+              "Line": 162,
+              "Offset": 97,
+              "EndOffset": 116,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 127
+            },
+            {
+              "Line": 167,
+              "Offset": 143,
+              "EndOffset": 145,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 1
+            },
+            {
+              "Line": 151,
+              "Offset": 23,
+              "EndOffset": 162,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 129
+            },
+            {
+              "Line": 167,
+              "Offset": 143,
+              "EndOffset": 162,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 129
+            },
+            {
+              "Line": 148,
+              "Offset": 173,
+              "EndOffset": 178,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 37
+            }
+          ]
+        },
+        "System.Void Wintty.Render.RenderPlanner::Add(System.Collections.Generic.List`1<Wintty.Render.DecorationRun>,System.Int32,System.Int32,System.Int32,Wintty.Render.DecorationKind,Wintty.Core.Abstractions.TerminalColor)": {
+          "Lines": {
+            "177": 12,
+            "179": 4,
+            "180": 4,
+            "182": 2,
+            "183": 2,
+            "187": 10,
+            "188": 10
+          },
+          "Branches": [
+            {
+              "Line": 177,
+              "Offset": 7,
+              "EndOffset": 9,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 4
+            },
+            {
+              "Line": 180,
+              "Offset": 32,
+              "EndOffset": 34,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 4
+            },
+            {
+              "Line": 180,
+              "Offset": 43,
+              "EndOffset": 45,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 3
+            },
+            {
+              "Line": 180,
+              "Offset": 59,
+              "EndOffset": 61,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 2
+            },
+            {
+              "Line": 180,
+              "Offset": 77,
+              "EndOffset": 79,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 2
+            },
+            {
+              "Line": 177,
+              "Offset": 7,
+              "EndOffset": 113,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 10
+            },
+            {
+              "Line": 180,
+              "Offset": 32,
+              "EndOffset": 113,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 10
+            },
+            {
+              "Line": 180,
+              "Offset": 43,
+              "EndOffset": 113,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 10
+            },
+            {
+              "Line": 180,
+              "Offset": 59,
+              "EndOffset": 113,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 10
+            },
+            {
+              "Line": 180,
+              "Offset": 77,
+              "EndOffset": 113,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 10
+            }
+          ]
+        },
+        "Wintty.Render.DecorationKind Wintty.Render.RenderPlanner::ToKind(Wintty.Core.Abstractions.UnderlineStyle)": {
+          "Lines": {
+            "190": 10,
+            "191": 10,
+            "192": 1,
+            "193": 1,
+            "194": 1,
+            "195": 1,
+            "196": 6,
+            "197": 10
+          },
+          "Branches": [
+            {
+              "Line": 190,
+              "Offset": 3,
+              "EndOffset": 26,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 1
+            },
+            {
+              "Line": 190,
+              "Offset": 3,
+              "EndOffset": 30,
+              "Path": 2,
+              "Ordinal": 2,
+              "Hits": 1
+            },
+            {
+              "Line": 190,
+              "Offset": 3,
+              "EndOffset": 34,
+              "Path": 3,
+              "Ordinal": 3,
+              "Hits": 1
+            },
+            {
+              "Line": 190,
+              "Offset": 3,
+              "EndOffset": 38,
+              "Path": 4,
+              "Ordinal": 4,
+              "Hits": 1
+            },
+            {
+              "Line": 190,
+              "Offset": 3,
+              "EndOffset": 42,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 6
+            }
+          ]
+        },
+        "System.Nullable`1<Wintty.Render.CursorShape> Wintty.Render.RenderPlanner::BuildCursor(Wintty.Core.Abstractions.TerminalSnapshot,System.Boolean)": {
+          "Lines": {
+            "201": 29,
+            "202": 29,
+            "203": 29,
+            "204": 29,
+            "206": 27,
+            "209": 2,
+            "210": 2
+          },
+          "Branches": [
+            {
+              "Line": 202,
+              "Offset": 8,
+              "EndOffset": 10,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 28
+            },
+            {
+              "Line": 202,
+              "Offset": 17,
+              "EndOffset": 19,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 6
+            },
+            {
+              "Line": 202,
+              "Offset": 27,
+              "EndOffset": 29,
+              "Path": 0,
+              "Ordinal": 4,
+              "Hits": 5
+            },
+            {
+              "Line": 202,
+              "Offset": 42,
+              "EndOffset": 44,
+              "Path": 0,
+              "Ordinal": 6,
+              "Hits": 4
+            },
+            {
+              "Line": 202,
+              "Offset": 52,
+              "EndOffset": 54,
+              "Path": 0,
+              "Ordinal": 8,
+              "Hits": 3
+            },
+            {
+              "Line": 202,
+              "Offset": 8,
+              "EndOffset": 69,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 27
+            },
+            {
+              "Line": 202,
+              "Offset": 17,
+              "EndOffset": 69,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 27
+            },
+            {
+              "Line": 202,
+              "Offset": 27,
+              "EndOffset": 69,
+              "Path": 1,
+              "Ordinal": 5,
+              "Hits": 27
+            },
+            {
+              "Line": 202,
+              "Offset": 42,
+              "EndOffset": 69,
+              "Path": 1,
+              "Ordinal": 7,
+              "Hits": 27
+            },
+            {
+              "Line": 202,
+              "Offset": 52,
+              "EndOffset": 69,
+              "Path": 1,
+              "Ordinal": 9,
+              "Hits": 27
+            },
+            {
+              "Line": 202,
+              "Offset": 67,
+              "EndOffset": 69,
+              "Path": 0,
+              "Ordinal": 10,
+              "Hits": 27
+            },
+            {
+              "Line": 202,
+              "Offset": 67,
+              "EndOffset": 79,
+              "Path": 1,
+              "Ordinal": 11,
+              "Hits": 2
+            },
+            {
+              "Line": 210,
+              "Offset": 122,
+              "EndOffset": 124,
+              "Path": 0,
+              "Ordinal": 12,
+              "Hits": 1
+            },
+            {
+              "Line": 210,
+              "Offset": 122,
+              "EndOffset": 127,
+              "Path": 1,
+              "Ordinal": 13,
+              "Hits": 1
+            }
+          ]
+        },
+        "System.Void Wintty.Render.RenderPlanner::<AddTexts>g__Flush|2_0(Wintty.Render.RenderPlanner/<>c__DisplayClass2_0&)": {
+          "Lines": {
+            "77": 137,
+            "79": 29,
+            "80": 29,
+            "81": 29,
+            "82": 29,
+            "83": 29,
+            "84": 29,
+            "85": 29,
+            "86": 29,
+            "87": 29,
+            "90": 137,
+            "91": 137,
+            "92": 137,
+            "93": 137,
+            "94": 137
+          },
+          "Branches": [
+            {
+              "Line": 77,
+              "Offset": 11,
+              "EndOffset": 16,
+              "Path": 0,
+              "Ordinal": 0,
+              "Hits": 29
+            },
+            {
+              "Line": 77,
+              "Offset": 40,
+              "EndOffset": 42,
+              "Path": 0,
+              "Ordinal": 2,
+              "Hits": 29
+            },
+            {
+              "Line": 77,
+              "Offset": 11,
+              "EndOffset": 163,
+              "Path": 1,
+              "Ordinal": 1,
+              "Hits": 137
+            },
+            {
+              "Line": 77,
+              "Offset": 40,
+              "EndOffset": 163,
+              "Path": 1,
+              "Ordinal": 3,
+              "Hits": 137
+            }
+          ]
+        }
+      }
+    }
+  }
+}

@@ -1,6 +1,6 @@
 # 08 Renderer MVP
 
-Status: todo
+Status: partly done (MVP renders via Win2D; hand-written D3D11 glyph atlas, font fallback and DPI testing remain)
 
 **Goal:** draw the terminal grid in a WinUI 3 `SwapChainPanel`.
 

@@ -9,6 +9,7 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         Title = $"wintty {VersionInfo.Current}";
-        VersionText.Text = $"wintty {VersionInfo.Current}";
+        Terminal.TitleChanged += (_, title) => Title = title;
+        Terminal.ProcessExited += (_, _) => Close();
     }
 }
