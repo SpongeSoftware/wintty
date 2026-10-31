@@ -1,0 +1,67 @@
+using System.Text;
+using Wintty.Core.Abstractions;
+
+namespace Wintty.Tests.Fakes;
+
+/// <summary>In-memory <see cref="ITerminalEngine"/> that records everything written to it.</summary>
+internal sealed class FakeTerminalEngine : ITerminalEngine
+{
+    private readonly StringBuilder _text = new();
+
+    public FakeTerminalEngine(int columns, int rows)
+    {
+        Columns = columns;
+        Rows = rows;
+    }
+
+    public int Columns { get; private set; }
+
+    public int Rows { get; private set; }
+
+    public string? Title { get; set; }
+
+    public bool IsDisposed { get; private set; }
+
+    public string Text
+    {
+        get
+        {
+            lock (_text)
+            {
+                return _text.ToString();
+            }
+        }
+    }
+
+    public void Write(ReadOnlySpan<byte> data)
+    {
+        lock (_text)
+        {
+            _text.Append(Encoding.UTF8.GetString(data));
+        }
+    }
+
+    public void Resize(int columns, int rows)
+    {
+        Columns = columns;
+        Rows = rows;
+    }
+
+    public void Dispose() => IsDisposed = true;
+}
+
+/// <summary>Factory that hands out <see cref="FakeTerminalEngine"/> instances and remembers them.</summary>
+internal sealed class FakeTerminalEngineFactory : ITerminalEngineFactory
+{
+    public List<FakeTerminalEngine> Created { get; } = [];
+
+    public TerminalEngineOptions? LastOptions { get; private set; }
+
+    public ITerminalEngine Create(TerminalEngineOptions options)
+    {
+        LastOptions = options;
+        var engine = new FakeTerminalEngine(options.Columns, options.Rows);
+        Created.Add(engine);
+        return engine;
+    }
+}
