@@ -15,6 +15,11 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
         Rows = rows;
     }
 
+    public TerminalResponseHandler? ResponseHandler { get; set; }
+
+    /// <summary>Simulates the terminal producing a reply to a query.</summary>
+    public void Respond(byte[] reply) => ResponseHandler?.Invoke(reply);
+
     public int Columns { get; private set; }
 
     public int Rows { get; private set; }
@@ -41,6 +46,10 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
             _text.Append(Encoding.UTF8.GetString(data));
         }
     }
+
+    public (int Width, int Height)? CellSize { get; private set; }
+
+    public void SetCellSize(int widthPixels, int heightPixels) => CellSize = (widthPixels, heightPixels);
 
     public void Resize(int columns, int rows)
     {

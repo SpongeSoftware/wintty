@@ -19,7 +19,9 @@ internal sealed class FakePtyConnection : IPtyConnection
 
     public MemoryStream InputBuffer { get; } = new();
 
-    public Stream Input => InputBuffer;
+    public Stream? InputOverride { get; set; }
+
+    public Stream Input => InputOverride ?? InputBuffer;
 
     public int ProcessId => 1234;
 
@@ -71,4 +73,36 @@ internal sealed class FakePtyConnectionFactory : IPtyConnectionFactory
 
         return Task.FromResult<IPtyConnection>(Connection);
     }
+}
+
+/// <summary>A stream whose writes always fail, to simulate a closed pseudo-terminal.</summary>
+internal sealed class ThrowingStream : Stream
+{
+    public override bool CanRead => false;
+
+    public override bool CanSeek => false;
+
+    public override bool CanWrite => true;
+
+    public override long Length => throw new NotSupportedException();
+
+    public override long Position
+    {
+        get => throw new NotSupportedException();
+        set => throw new NotSupportedException();
+    }
+
+    public override void Flush()
+    {
+    }
+
+    public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+    public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+
+    public override void SetLength(long value) => throw new NotSupportedException();
+
+    public override void Write(byte[] buffer, int offset, int count) => throw new IOException("closed");
+
+    public override void Write(ReadOnlySpan<byte> buffer) => throw new IOException("closed");
 }
