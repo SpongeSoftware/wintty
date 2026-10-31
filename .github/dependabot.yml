@@ -4,15 +4,31 @@ updates:
     directory: /
     schedule: { interval: weekly }
     commit-message: { prefix: "build(deps)" }
+    groups:
+      test-tooling:
+        patterns: ["Microsoft.NET.Test.Sdk", "xunit*", "coverlet*"]
+      windows-app-sdk:
+        # These must stay mutually compatible, so they update together.
+        patterns: ["Microsoft.WindowsAppSDK", "Microsoft.Windows.SDK.BuildTools", "Microsoft.Graphics.Win2D"]
   - package-ecosystem: github-actions
     directory: /
     schedule: { interval: weekly }
     commit-message: { prefix: "ci(deps)" }
+    groups:
+      actions:
+        patterns: ["*"]
   - package-ecosystem: npm
     directory: /docs
     schedule: { interval: weekly }
     commit-message: { prefix: "build(deps)" }
+    groups:
+      docs-framework:
+        # Starlight pins the Astro major it supports, so they must move together.
+        patterns: ["astro", "@astrojs/*"]
   - package-ecosystem: npm
     directory: /
     schedule: { interval: weekly }
     commit-message: { prefix: "build(deps)" }
+    groups:
+      commit-tooling:
+        patterns: ["@commitlint/*", "husky"]
