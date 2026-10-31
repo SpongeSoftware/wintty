@@ -16,7 +16,7 @@ Run from the repository root. The shell is Git Bash or PowerShell on Windows.
 | Build as CI does (warnings are errors) | `CI=true dotnet build wintty.sln -c Release` |
 | Run all tests | `dotnet test tests/Wintty.Tests -c Release` |
 | Tests with the coverage gate | `dotnet test tests/Wintty.Tests -c Release -p:CollectCoverage=true -p:Threshold=90 -p:ThresholdType=line -p:ThresholdStat=total` |
-| Build the docs site | `cd docs && npm install && npm run build` |
+| Build the docs site (needs Node 22.23.4 or newer) | `cd docs && npm install && npm run build` |
 | Set a version | `-p:Version=1.2.3` (releases take it from the git tag; the default is `0.0.0-dev`) |
 
 Running the app: `dotnet build src/Wintty.App -c Release` writes to `src/Wintty.App/bin/Release/net10.0-windows10.0.19041.0/win-x64/`. A stale copy may exist under `bin/x64/`; check file timestamps before launching an exe. Startup errors are shown in the window and logged to `%LOCALAPPDATA%\wintty\wintty.log`.
