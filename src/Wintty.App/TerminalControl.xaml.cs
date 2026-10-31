@@ -13,6 +13,7 @@ using Windows.System;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Windows.UI;
 using Wintty.Core.Abstractions;
+using Wintty.Core.Configuration;
 using Wintty.Core.Input;
 using Wintty.Core.Sessions;
 using Wintty.Ghostty;
@@ -27,9 +28,9 @@ namespace Wintty.App;
 /// </summary>
 public sealed partial class TerminalControl : UserControl
 {
-    private const string FontFamilyName = "Cascadia Mono";
-    private const float TerminalFontSize = 15f;
-    private const double SurfacePadding = 6;
+    private WinttyConfig _config = new();
+    private ConfigWatcher? _configWatcher;
+    private string? _configProblems;
 
     private readonly GhosttyGateway _gateway = new();
     private readonly Dictionary<(FontRole Role, bool Bold, bool Italic), CanvasTextFormat> _formats = [];
@@ -104,10 +105,15 @@ public sealed partial class TerminalControl : UserControl
 
     private async Task StartSessionAsync()
     {
+        var loaded = ConfigLoader.Load(ConfigLoader.DefaultPath);
+        _config = loaded.Config;
+        ReportConfigProblems(loaded);
         MeasureCell();
         _grid = ComputeGrid();
-        var options = new PtyStartOptions(FindShell(), _grid.Columns, _grid.Rows)
+        var command = _config.Command is { } text ? CommandLine.Split(text) : null;
+        var options = new PtyStartOptions(command?.Application ?? FindShell(), _grid.Columns, _grid.Rows)
         {
+            Arguments = command?.Arguments ?? [],
             Environment = new Dictionary<string, string>
             {
                 ["TERM"] = "xterm-256color",
@@ -115,9 +121,13 @@ public sealed partial class TerminalControl : UserControl
             },
         };
 
-        _session = await TerminalSession.StartAsync(_gateway, _gateway, options);
+        _session = await TerminalSession.StartAsync(_gateway, _gateway, options, _config.ScrollbackLimit);
         ApplyCellPixelSize();
         var dispatcher = DispatcherQueue;
+        _configWatcher = new ConfigWatcher(
+            ConfigLoader.DefaultPath,
+            TimeSpan.FromMilliseconds(250),
+            result => dispatcher.TryEnqueue(() => ApplyConfig(result)));
         _session.Updated += (_, _) =>
         {
             if (Interlocked.Exchange(ref _invalidatePending, 1) == 0)
@@ -131,12 +141,60 @@ public sealed partial class TerminalControl : UserControl
             }
         };
         _session.Exited += (_, _) => dispatcher.TryEnqueue(() => ProcessExited?.Invoke(this, EventArgs.Empty));
-        _blinkTimer.Start();
+        if (_config.CursorBlink)
+        {
+            _blinkTimer.Start();
+        }
+
         Focus(FocusState.Programmatic);
+    }
+
+    // Applies a reloaded config to the running terminal: font, padding and blink change live;
+    // the shell command and scrollback only affect terminals started afterwards.
+    private void ApplyConfig(ConfigLoadResult result)
+    {
+        _config = result.Config;
+        ReportConfigProblems(result);
+        _formats.Clear();
+        MeasureCell();
+        var grid = ComputeGrid();
+        if (grid != _grid)
+        {
+            _grid = grid;
+            _session?.Resize(grid.Columns, grid.Rows);
+        }
+
+        ApplyCellPixelSize();
+        _cursorOn = true;
+        if (_config.CursorBlink)
+        {
+            _blinkTimer.Start();
+        }
+        else
+        {
+            _blinkTimer.Stop();
+        }
+
+        Canvas.Invalidate();
+    }
+
+    private void ReportConfigProblems(ConfigLoadResult result)
+    {
+        if (result.Diagnostics.Count == 0)
+        {
+            _configProblems = null;
+            return;
+        }
+
+        var lines = result.Diagnostics.Select(d => d.ToString()).ToList();
+        _configProblems = $"config: {string.Join("\n", lines)}";
+        LogError(_configProblems);
     }
 
     private void Shutdown()
     {
+        _configWatcher?.Dispose();
+        _configWatcher = null;
         _blinkTimer.Stop();
         _session?.Dispose();
         _session = null;
@@ -174,7 +232,7 @@ public sealed partial class TerminalControl : UserControl
     private (int Columns, int Rows) ComputeGrid() =>
         _cellWidth <= 0 || _cellHeight <= 0
             ? _grid
-            : GridSizer.Compute(Canvas.ActualWidth, Canvas.ActualHeight, _cellWidth, _cellHeight, SurfacePadding);
+            : GridSizer.Compute(Canvas.ActualWidth, Canvas.ActualHeight, _cellWidth, _cellHeight, _config.WindowPadding);
 
     // Terminal size queries are answered in physical pixels, so convert from DIPs with the current display scale.
     private void ApplyCellPixelSize()
@@ -234,8 +292,8 @@ public sealed partial class TerminalControl : UserControl
         {
             format = new CanvasTextFormat
             {
-                FontFamily = role == FontRole.Symbols && _symbolFont is not null ? _symbolFont : FontFamilyName,
-                FontSize = TerminalFontSize,
+                FontFamily = role == FontRole.Symbols && _symbolFont is not null ? _symbolFont : _config.FontFamily,
+                FontSize = _config.FontSize,
                 FontWeight = bold ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.Normal,
                 FontStyle = italic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal,
                 WordWrapping = CanvasWordWrapping.NoWrap,
@@ -284,7 +342,7 @@ public sealed partial class TerminalControl : UserControl
 
         var plan = RenderPlanner.Build(snapshot, _cursorOn || FocusState == FocusState.Unfocused);
         var drawing = args.DrawingSession;
-        var origin = (float)SurfacePadding;
+        var origin = (float)_config.WindowPadding;
         drawing.Clear(ToColor(plan.Background));
 
         foreach (var run in plan.Backgrounds)
@@ -328,6 +386,22 @@ public sealed partial class TerminalControl : UserControl
         {
             DrawCursor(drawing, cursor, origin);
         }
+
+        if (_configProblems is not null)
+        {
+            DrawConfigProblems(drawing);
+        }
+    }
+
+    // A banner along the bottom so a mistyped config line is noticed without opening the log.
+    private void DrawConfigProblems(CanvasDrawingSession drawing)
+    {
+        var format = FormatFor(FontRole.Primary, false, false);
+        var height = (float)Canvas.ActualHeight;
+        var lines = _configProblems!.Split('\n').Length;
+        var bannerHeight = (lines * _cellHeight) + 8;
+        drawing.FillRectangle(0, height - bannerHeight, (float)Canvas.ActualWidth, bannerHeight, Color.FromArgb(230, 60, 0, 0));
+        drawing.DrawText(_configProblems, 8, height - bannerHeight + 4, Colors.Tomato, format);
     }
 
     private void DrawDecoration(CanvasDrawingSession drawing, DecorationRun run, float origin)
