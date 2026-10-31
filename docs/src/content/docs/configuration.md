@@ -14,5 +14,5 @@ command = pwsh.exe
 ```
 
 :::note
-This page is a stub; options are added as they are implemented (see `tasks/12-config.md`).
+This page is a stub; options are added as they are implemented (see [issue #8](https://github.com/SpongeSoftware/wintty/issues/8)).
 :::
