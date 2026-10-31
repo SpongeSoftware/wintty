@@ -143,6 +143,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         var defaultBackground = ReadStateColor(GhosttyNativeLibrary.RenderStateDataColorBackground);
 
         var cells = new TerminalCell[columns * rows];
+        var palette = new GhosttyNativeLibrary.NativeColor[GhosttyNativeLibrary.RenderStatePaletteLength];
+        var paletteOrNull = _native.RenderStateColorsGet(_renderState, palette) == GhosttyNativeLibrary.Success ? palette : null;
         var iterator = _rowIterator;
         ThrowIfFailed(
             _native.RenderStateGetHandle(_renderState, GhosttyNativeLibrary.RenderStateDataRowIterator, ref iterator),
@@ -155,7 +157,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             ThrowIfFailed(_native.RowGetCells(iterator, ref rowCells), "read row cells");
             for (var column = 0; column < columns; column++)
             {
-                cells[(row * columns) + column] = ReadCell(rowCells, column, defaultForeground, defaultBackground);
+                cells[(row * columns) + column] = ReadCell(rowCells, column, defaultForeground, defaultBackground, paletteOrNull);
             }
 
             row++;
@@ -229,7 +231,12 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         return new CursorState(x, y, visible != 0 && inViewport != 0, shape);
     }
 
-    private unsafe TerminalCell ReadCell(IntPtr rowCells, int column, TerminalColor defaultForeground, TerminalColor defaultBackground)
+    private unsafe TerminalCell ReadCell(
+        IntPtr rowCells,
+        int column,
+        TerminalColor defaultForeground,
+        TerminalColor defaultBackground,
+        GhosttyNativeLibrary.NativeColor[]? palette)
     {
         ThrowIfFailed(_native.RowCellsSelect(rowCells, checked((ushort)column)), "select cell");
 
@@ -256,10 +263,12 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 
         var attributes = CellAttributes.None;
         var underline = UnderlineStyle.None;
+        TerminalColor? underlineColor = null;
         if (_native.RowCellsGetStyle(rowCells, out var style) == GhosttyNativeLibrary.Success)
         {
             attributes = ToAttributes(style);
             underline = Enum.IsDefined((UnderlineStyle)style.Underline) ? (UnderlineStyle)style.Underline : UnderlineStyle.Single;
+            underlineColor = ReadUnderlineColor(style, palette);
         }
 
         var width = 1;
@@ -274,7 +283,24 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             };
         }
 
-        return new TerminalCell(text, foreground, background, attributes, underline, width);
+        return new TerminalCell(text, foreground, background, attributes, underline, width, underline == UnderlineStyle.None ? null : underlineColor);
+    }
+
+    private static TerminalColor? ReadUnderlineColor(GhosttyNativeLibrary.NativeStyle style, GhosttyNativeLibrary.NativeColor[]? palette)
+    {
+        var color = style.UnderlineColor;
+        if (color.Tag == GhosttyNativeLibrary.StyleColorTagRgb)
+        {
+            return ToColor(color.Value.Rgb);
+        }
+
+        if (color.Tag == GhosttyNativeLibrary.StyleColorTagPalette && palette is not null && color.Value.Palette < palette.Length)
+        {
+            return ToColor(palette[color.Value.Palette]);
+        }
+
+        // Tag "none": the underline follows the text colour.
+        return null;
     }
 
     private static string ToText(uint[] codepoints)

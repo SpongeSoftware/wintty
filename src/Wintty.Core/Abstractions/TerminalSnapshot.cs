@@ -92,13 +92,15 @@ public readonly record struct CursorState(int Column, int Row, bool Visible, Cur
 /// <param name="Attributes">Text attributes.</param>
 /// <param name="Underline">Underline style.</param>
 /// <param name="Width">1 for a normal cell, 2 for the left half of a wide character, 0 for its right half.</param>
+/// <param name="UnderlineColor">Colour of the underline, or <see langword="null"/> to use the text colour.</param>
 public readonly record struct TerminalCell(
     string Text,
     TerminalColor Foreground,
     TerminalColor Background,
     CellAttributes Attributes = CellAttributes.None,
     UnderlineStyle Underline = UnderlineStyle.None,
-    int Width = 1)
+    int Width = 1,
+    TerminalColor? UnderlineColor = null)
 {
     /// <summary>The colour to draw text with, accounting for <see cref="CellAttributes.Inverse"/>.</summary>
     public TerminalColor EffectiveForeground => Attributes.HasFlag(CellAttributes.Inverse) ? Background : Foreground;
