@@ -12,4 +12,10 @@ public readonly record struct ConfigDiagnostic(int Line, string Message)
 /// <summary>The outcome of reading configuration: the settings that were valid plus any problems.</summary>
 /// <param name="Config">The resulting settings; invalid lines leave the default in place.</param>
 /// <param name="Diagnostics">Problems found, in file order.</param>
-public sealed record ConfigLoadResult(WinttyConfig Config, IReadOnlyList<ConfigDiagnostic> Diagnostics);
+public sealed record ConfigLoadResult(WinttyConfig Config, IReadOnlyList<ConfigDiagnostic> Diagnostics)
+{
+    /// <summary>
+    /// The colours to apply: the theme named in the file with the file's own colour options layered on top.
+    /// </summary>
+    public Abstractions.TerminalColorScheme Colors { get; init; } = Abstractions.TerminalColorScheme.Default;
+}

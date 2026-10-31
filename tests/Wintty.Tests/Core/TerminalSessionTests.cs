@@ -286,4 +286,28 @@ public class TerminalSessionTests
 
         Assert.Throws<ObjectDisposedException>(() => session.SetCellSize(9, 19));
     }
+
+    [Fact]
+    public async Task SetColors_ForwardsToTheEngine()
+    {
+        var (session, engines, _) = await StartAsync();
+        using (session)
+        {
+            var scheme = new TerminalColorScheme(Foreground: new TerminalColor(1, 2, 3));
+
+            session.SetColors(scheme);
+
+            Assert.Same(scheme, engines.Created[0].Colors);
+        }
+    }
+
+    [Fact]
+    public async Task SetColors_RejectsNullAndFailsAfterDispose()
+    {
+        var (session, _, _) = await StartAsync();
+        Assert.Throws<ArgumentNullException>(() => session.SetColors(null!));
+        session.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => session.SetColors(TerminalColorScheme.Default));
+    }
 }

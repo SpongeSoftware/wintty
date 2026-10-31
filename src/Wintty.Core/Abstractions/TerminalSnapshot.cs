@@ -83,7 +83,8 @@ public enum CursorStyle
 /// <param name="Row">Zero-based row.</param>
 /// <param name="Visible">Whether the cursor should be drawn.</param>
 /// <param name="Style">The cursor shape.</param>
-public readonly record struct CursorState(int Column, int Row, bool Visible, CursorStyle Style);
+/// <param name="Color">The cursor colour set by the colour scheme or the program, or <see langword="null"/> to use the text colour.</param>
+public readonly record struct CursorState(int Column, int Row, bool Visible, CursorStyle Style, TerminalColor? Color = null);
 
 /// <summary>One character cell with its colours already resolved to RGB.</summary>
 /// <param name="Text">The grapheme cluster shown in the cell; empty for a blank cell.</param>

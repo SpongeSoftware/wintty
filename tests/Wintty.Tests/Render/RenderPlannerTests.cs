@@ -248,6 +248,14 @@ public class RenderPlannerTests
     }
 
     [Fact]
+    public void Cursor_UsesItsOwnColourWhenTheSnapshotHasOne()
+    {
+        var snapshot = Snapshot(5, 1, new CursorState(0, 0, true, CursorStyle.Block, Red));
+
+        Assert.Equal(Red, RenderPlanner.Build(snapshot).Cursor!.Value.Color);
+    }
+
+    [Fact]
     public void Cursor_OverWideCharacterSpansTwoCells()
     {
         var snapshot = Snapshot(5, 1, new CursorState(1, 0, true, CursorStyle.Block), (1, 0, Ch("中", width: 2)));

@@ -14,3 +14,13 @@ LibGhostty.Net 1.0.2 - MIT License (https://github.com/jkelin/libghostty-net)
 Managed bindings and PTY host for libghostty-vt. The package redistributes native components from a
 Ghostty fork and Windows Terminal (conpty.dll, OpenConsole.exe, MIT); review their notices before
 redistributing binaries.
+
+Built-in colour themes (src/Wintty.Core/Themes)
+The terminal colour schemes bundled with wintty are the same set Ghostty ships, taken from
+https://github.com/mbadolato/iTerm2-Color-Schemes (MIT License, Copyright (c) 2011 to Present Mark Badolato).
+Each scheme remains the work of its original author; this collection includes Catppuccin (MIT,
+https://github.com/catppuccin) and Gruvbox (MIT, Pavel Pertsev, https://github.com/morhetz/gruvbox).
+
+The Bamboo, Bamboo Multiplex and Bamboo Light schemes are derived from the bamboo.nvim colour palettes
+(MIT License, Copyright (c) 2021 Navarasu and ribru17, https://github.com/ribru17/bamboo.nvim). bamboo.nvim does
+not define terminal colours, so the mapping of its colours onto the 16 ANSI slots is wintty's own.

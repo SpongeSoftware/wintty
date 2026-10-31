@@ -20,6 +20,8 @@ Problems are listed in a red banner along the bottom of the window and written t
 
 ```ini
 # %APPDATA%\wintty\config
+theme = catppuccin-mocha
+palette = 1=#ff5555
 font-family = Cascadia Mono
 font-size = 14
 window-padding = 8
@@ -36,11 +38,18 @@ command = pwsh.exe -NoLogo
 | `font-size` | `15` | live | Size in device-independent pixels, from 4 to 200. Fractions are allowed. |
 | `window-padding` | `6` | live | Space in pixels between the window edge and the text grid, on every side. 0 to 200. |
 | `cursor-style-blink` | `true` | live | `true` or `false`. Whether the cursor blinks. |
+| `theme` | none | live | Colour theme by name, for example `catppuccin-mocha` or `Gruvbox Dark`. See [Themes](/wintty/themes/). Your own colour options below are layered on top of the theme. |
+| `foreground` | theme or built-in | live | Default text colour as `#rrggbb` (or `#rgb`). |
+| `background` | theme or built-in | live | Default background colour. |
+| `cursor-color` | theme or text colour | live | Cursor colour. |
+| `palette` | theme or built-in | live | One palette entry per line as `index=#rrggbb`, index 0 to 255. Repeat the line for more entries. An empty value clears every `palette` line above it. |
 | `scrollback-limit` | `10000` | new terminals | Number of scrollback lines kept. Zero disables scrollback. |
 | `command` | auto-detected | new terminals | Program to run, with arguments. Quote a path that contains spaces: `"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo`. When unset wintty runs `pwsh.exe` if it is on `PATH`, otherwise `powershell.exe`. |
 
 "Live" options change in the running window when the file is saved. "New terminals" options are read when a terminal starts, so they take effect the next time you open one.
 
 :::note
-Colours, themes, palette entries and cursor style are on the roadmap and are not read yet. They will be added to this table as they are implemented. An option wintty does not know is reported as a problem rather than silently ignored.
+Selection colours and cursor style are not read yet. They will be added to this table as they are implemented. An option wintty does not know is reported as a problem rather than silently ignored.
+
+Editing a theme file in `%APPDATA%\wintty	hemes` is picked up the next time the config file is saved.
 :::

@@ -51,6 +51,10 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
 
     public void SetCellSize(int widthPixels, int heightPixels) => CellSize = (widthPixels, heightPixels);
 
+    public TerminalColorScheme? Colors { get; private set; }
+
+    public void SetColors(TerminalColorScheme scheme) => Colors = scheme;
+
     public void Resize(int columns, int rows)
     {
         Columns = columns;

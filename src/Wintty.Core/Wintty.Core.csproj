@@ -5,6 +5,11 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <!-- Built-in colour themes, one Ghostty-format file per theme. See NOTICE for attribution. -->
+    <EmbeddedResource Include="Themes\*" LogicalName="Wintty.Themes.%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
     <InternalsVisibleTo Include="Wintty.Tests" />
   </ItemGroup>
 

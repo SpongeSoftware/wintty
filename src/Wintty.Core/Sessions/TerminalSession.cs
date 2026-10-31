@@ -140,6 +140,18 @@ public sealed class TerminalSession : IDisposable
         }
     }
 
+    /// <summary>Applies a colour scheme to the running terminal.</summary>
+    /// <param name="scheme">The colours to use.</param>
+    public void SetColors(TerminalColorScheme scheme)
+    {
+        ArgumentNullException.ThrowIfNull(scheme);
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            Engine.SetColors(scheme);
+        }
+    }
+
     /// <summary>Resizes both the pseudo-terminal and the terminal engine.</summary>
     /// <param name="columns">New width in cells.</param>
     /// <param name="rows">New height in cells.</param>

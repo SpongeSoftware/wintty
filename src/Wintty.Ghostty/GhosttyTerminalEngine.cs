@@ -25,9 +25,17 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private int _cellWidthPixels;
     private int _cellHeightPixels;
 
+    // Terminal options and render-state fields the wrapper package does not name yet.
+    private const int TerminalOptionColorCursor = 13;
+    private const int TerminalOptionColorPalette = 14;
+    private const int RenderStateDataColorCursor = 7;
+
+    private readonly TerminalEngineOptions _defaults;
+
     internal GhosttyTerminalEngine(GhosttyNativeLibrary native, TerminalEngineOptions options)
     {
         _native = native;
+        _defaults = options;
         var status = native.TerminalNew(
             new GhosttyNativeLibrary.TerminalOptions
             {
@@ -223,6 +231,47 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         _native.TerminalFree(handle);
     }
 
+    /// <inheritdoc />
+    public unsafe void SetColors(TerminalColorScheme scheme)
+    {
+        ArgumentNullException.ThrowIfNull(scheme);
+        scheme.Validate();
+        ThrowIfDisposed();
+
+        SetDefaultColor(GhosttyNativeLibrary.TerminalOptionColorForeground, scheme.Foreground ?? _defaults.EffectiveForeground);
+        SetDefaultColor(GhosttyNativeLibrary.TerminalOptionColorBackground, scheme.Background ?? _defaults.EffectiveBackground);
+
+        // A null pointer returns an option to libghostty's built-in value.
+        if (scheme.CursorColor is { } cursor)
+        {
+            SetDefaultColor(TerminalOptionColorCursor, cursor);
+        }
+        else
+        {
+            ThrowIfFailed(_native.TerminalSet(_handle, TerminalOptionColorCursor, IntPtr.Zero), "reset the cursor colour");
+        }
+
+        ThrowIfFailed(_native.TerminalSet(_handle, TerminalOptionColorPalette, IntPtr.Zero), "reset the palette");
+        if (scheme.Entries.Count == 0)
+        {
+            return;
+        }
+
+        // The palette is replaced as a whole, so start from the built-in entries and overlay the overrides.
+        ThrowIfFailed(_native.RenderStateUpdate(_renderState, _handle), "update render state");
+        var palette = new GhosttyNativeLibrary.NativeColor[GhosttyNativeLibrary.RenderStatePaletteLength];
+        ThrowIfFailed(_native.RenderStateColorsGet(_renderState, palette), "read the palette");
+        foreach (var (index, color) in scheme.Entries)
+        {
+            palette[index] = new GhosttyNativeLibrary.NativeColor { Red = color.Red, Green = color.Green, Blue = color.Blue };
+        }
+
+        fixed (GhosttyNativeLibrary.NativeColor* pointer = palette)
+        {
+            ThrowIfFailed(_native.TerminalSet(_handle, TerminalOptionColorPalette, (IntPtr)pointer), "set the palette");
+        }
+    }
+
     private unsafe void SetDefaultColor(int option, TerminalColor color)
     {
         var native = new GhosttyNativeLibrary.NativeColor { Red = color.Red, Green = color.Green, Blue = color.Blue };
@@ -313,7 +362,10 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         }
 
         var shape = Enum.IsDefined((CursorStyle)style) ? (CursorStyle)style : CursorStyle.Block;
-        return new CursorState(x, y, visible != 0 && inViewport != 0, shape);
+        TerminalColor? color = _native.RenderStateGetColor(_renderState, RenderStateDataColorCursor, out var native) == GhosttyNativeLibrary.Success
+            ? ToColor(native)
+            : null;
+        return new CursorState(x, y, visible != 0 && inViewport != 0, shape, color);
     }
 
     private unsafe TerminalCell ReadCell(
