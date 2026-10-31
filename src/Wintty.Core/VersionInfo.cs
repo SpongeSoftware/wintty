@@ -5,6 +5,7 @@ namespace Wintty.Core;
 /// <summary>Exposes the build version, which is injected from the git tag (-p:Version=x.y.z).</summary>
 public static class VersionInfo
 {
+    /// <summary>The semantic version of this build, without build metadata (for example <c>1.2.3</c>).</summary>
     public static string Current { get; } = Resolve(typeof(VersionInfo).Assembly);
 
     internal static string Resolve(Assembly assembly)

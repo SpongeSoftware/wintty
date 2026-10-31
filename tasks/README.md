@@ -17,5 +17,6 @@ Self-contained specs sized for a single agent session. Each lists goal, scope, a
 | 11 | Splits | 10 |
 | 12 | Config + hot reload | 09 |
 | 13 | Polish + packaging | all |
+| 14 | Architecture + quality gates (coverage, docs, single libghostty gateway) | 02, alongside 06 |
 
 Commits for every task use Conventional Commits.

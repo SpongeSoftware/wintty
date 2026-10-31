@@ -1,6 +1,6 @@
 # 02 .NET solution and tag-derived versioning
 
-Status: done
+Status: done (retargeted to .NET 10)
 
 **Goal:** buildable solution with the version injected from the git tag.
 

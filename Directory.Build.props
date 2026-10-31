@@ -14,4 +14,9 @@
     <LangVersion>latest</LangVersion>
     <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
   </PropertyGroup>
+
+  <!-- Libraries must document every public member (CS1591); the WinUI app and tests are exempt. -->
+  <PropertyGroup Condition="'$(MSBuildProjectName)' != 'Wintty.App' And '$(MSBuildProjectName)' != 'Wintty.Tests'">
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+  </PropertyGroup>
 </Project>

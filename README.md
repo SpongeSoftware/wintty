@@ -20,7 +20,7 @@ Downloads are published on the [GitHub Releases](../../releases) page and on the
 
 ## Build
 
-Requirements: Windows 11, .NET SDK 8+, Windows App SDK, Visual Studio 2022 (or Build Tools), Zig (to build libghostty-vt).
+Requirements: Windows 11, .NET SDK 10+, Windows App SDK, Visual Studio 2022 (or Build Tools), Zig (to build libghostty-vt).
 
 ```powershell
 dotnet build wintty.sln
