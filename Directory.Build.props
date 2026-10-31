@@ -1,0 +1,17 @@
+<Project>
+  <!--
+    Version comes from the git tag at release time: dotnet build -p:Version=1.2.3
+    Local and CI builds without a tag fall back to a dev version.
+  -->
+  <PropertyGroup>
+    <Version Condition="'$(Version)' == ''">0.0.0-dev</Version>
+    <Authors>wintty contributors</Authors>
+    <Copyright>Copyright (c) 2026 wintty contributors</Copyright>
+    <PackageLicenseExpression>MIT</PackageLicenseExpression>
+    <RepositoryType>git</RepositoryType>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <LangVersion>latest</LangVersion>
+    <TreatWarningsAsErrors Condition="'$(CI)' == 'true'">true</TreatWarningsAsErrors>
+  </PropertyGroup>
+</Project>

@@ -1,0 +1,11 @@
+wintty incorporates or links against the following third-party software.
+
+libghostty-vt (Ghostty) - MIT License
+Copyright (c) 2024 Mitchell Hashimoto, Ghostty contributors
+https://github.com/ghostty-org/ghostty
+
+wintty is an independent project and is not affiliated with or endorsed by
+the Ghostty project.
+
+(Verify the upstream LICENSE text and copyright line when vendoring or
+redistributing ghostty-vt binaries, and keep this file up to date.)
