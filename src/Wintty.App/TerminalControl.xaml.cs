@@ -34,6 +34,8 @@ public sealed partial class TerminalControl : UserControl
     private readonly GhosttyGateway _gateway = new();
     private readonly Dictionary<(FontRole Role, bool Bold, bool Italic), CanvasTextFormat> _formats = [];
     private string? _symbolFont;
+    private bool _decorationErrorLogged;
+    private bool _snapshotErrorLogged;
     private (int Width, int Height) _cellPixels;
     private readonly DispatcherQueueTimer _blinkTimer;
     private TerminalSession? _session;
@@ -262,9 +264,22 @@ public sealed partial class TerminalControl : UserControl
         }
 
         TerminalSnapshot snapshot;
-        lock (session.SyncRoot)
+        try
         {
-            snapshot = session.Engine.CreateSnapshot();
+            lock (session.SyncRoot)
+            {
+                snapshot = session.Engine.CreateSnapshot();
+            }
+        }
+        catch (Exception ex)
+        {
+            if (!_snapshotErrorLogged)
+            {
+                _snapshotErrorLogged = true;
+                LogError("Snapshot failed: " + ex);
+            }
+
+            return;
         }
 
         var plan = RenderPlanner.Build(snapshot, _cursorOn || FocusState == FocusState.Unfocused);
@@ -294,7 +309,19 @@ public sealed partial class TerminalControl : UserControl
 
         foreach (var run in plan.Decorations)
         {
-            DrawDecoration(drawing, run, origin);
+            try
+            {
+                DrawDecoration(drawing, run, origin);
+            }
+            catch (Exception ex)
+            {
+                // A failing decoration must not blank the whole frame; log it once and carry on.
+                if (!_decorationErrorLogged)
+                {
+                    _decorationErrorLogged = true;
+                    LogError("Decoration drawing failed: " + ex);
+                }
+            }
         }
 
         if (plan.Cursor is { } cursor)
@@ -324,6 +351,9 @@ public sealed partial class TerminalControl : UserControl
             case DecorationKind.Overline:
                 drawing.DrawLine(x1, top + 0.5f, x2, top + 0.5f, color);
                 break;
+            case DecorationKind.CurlyUnderline:
+                DrawCurlyUnderline(drawing, x1, x2, top + _cellHeight - 2.5f, color);
+                break;
             case DecorationKind.DoubleUnderline:
                 drawing.DrawLine(x1, top + _cellHeight - 3.5f, x2, top + _cellHeight - 3.5f, color);
                 drawing.DrawLine(x1, top + _cellHeight - 1.5f, x2, top + _cellHeight - 1.5f, color);
@@ -332,6 +362,25 @@ public sealed partial class TerminalControl : UserControl
                 drawing.DrawLine(x1, top + _cellHeight - 1.5f, x2, top + _cellHeight - 1.5f, color, 1f, style);
                 break;
         }
+    }
+
+    // A zig-zag wave, one period per cell, so curly underlines read differently from straight and dashed ones.
+    private void DrawCurlyUnderline(CanvasDrawingSession drawing, float x1, float x2, float y, Color color)
+    {
+        const float amplitude = 1.5f;
+        var half = Math.Max(2f, _cellWidth / 2f);
+        using var path = new CanvasPathBuilder(drawing);
+        path.BeginFigure(x1, y);
+        var up = false;
+        for (var x = x1 + half; x < x2 + half; x += half)
+        {
+            path.AddLine(Math.Min(x, x2), up ? y : y - amplitude);
+            up = !up;
+        }
+
+        path.EndFigure(CanvasFigureLoop.Open);
+        using var geometry = CanvasGeometry.CreatePath(path);
+        drawing.DrawGeometry(geometry, color, 1f);
     }
 
     private void DrawCursor(CanvasDrawingSession drawing, CursorShape cursor, float origin)
