@@ -32,7 +32,8 @@ public sealed partial class TerminalControl : UserControl
     private const double SurfacePadding = 6;
 
     private readonly GhosttyGateway _gateway = new();
-    private readonly Dictionary<(bool Bold, bool Italic), CanvasTextFormat> _formats = [];
+    private readonly Dictionary<(FontRole Role, bool Bold, bool Italic), CanvasTextFormat> _formats = [];
+    private string? _symbolFont;
     private readonly DispatcherQueueTimer _blinkTimer;
     private TerminalSession? _session;
     private float _cellWidth;
@@ -160,7 +161,8 @@ public sealed partial class TerminalControl : UserControl
 
     private void MeasureCell()
     {
-        using var layout = new CanvasTextLayout(CanvasDevice.GetSharedDevice(), "M", FormatFor(false, false), 0, 0);
+        _symbolFont ??= SymbolFontResolver.Resolve(CanvasTextFormat.GetSystemFontFamilies());
+        using var layout = new CanvasTextLayout(CanvasDevice.GetSharedDevice(), "M", FormatFor(FontRole.Primary, false, false), 0, 0);
         _cellWidth = (float)Math.Ceiling(layout.LayoutBounds.Width);
         _cellHeight = (float)Math.Ceiling(layout.LayoutBounds.Height);
     }
@@ -202,19 +204,19 @@ public sealed partial class TerminalControl : UserControl
         }
     }
 
-    private CanvasTextFormat FormatFor(bool bold, bool italic)
+    private CanvasTextFormat FormatFor(FontRole role, bool bold, bool italic)
     {
-        if (!_formats.TryGetValue((bold, italic), out var format))
+        if (!_formats.TryGetValue((role, bold, italic), out var format))
         {
             format = new CanvasTextFormat
             {
-                FontFamily = FontFamilyName,
+                FontFamily = role == FontRole.Symbols && _symbolFont is not null ? _symbolFont : FontFamilyName,
                 FontSize = TerminalFontSize,
                 FontWeight = bold ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.Normal,
                 FontStyle = italic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal,
                 WordWrapping = CanvasWordWrapping.NoWrap,
             };
-            _formats[(bold, italic)] = format;
+            _formats[(role, bold, italic)] = format;
         }
 
         return format;
@@ -227,7 +229,7 @@ public sealed partial class TerminalControl : UserControl
         if (_startupError is not null)
         {
             args.DrawingSession.Clear(Colors.Black);
-            args.DrawingSession.DrawText(_startupError, 8, 8, Colors.Tomato, FormatFor(false, false));
+            args.DrawingSession.DrawText(_startupError, 8, 8, Colors.Tomato, FormatFor(FontRole.Primary, false, false));
             return;
         }
 
@@ -265,7 +267,7 @@ public sealed partial class TerminalControl : UserControl
                 origin + (run.Column * _cellWidth),
                 origin + (run.Row * _cellHeight),
                 ToColor(run.Color, run.Faint ? (byte)150 : (byte)255),
-                FormatFor(run.Bold, run.Italic));
+                FormatFor(run.Role, run.Bold, run.Italic));
         }
 
         foreach (var run in plan.Decorations)

@@ -84,7 +84,8 @@ public static class RenderPlanner
                     style.EffectiveForeground,
                     style.Attributes.HasFlag(CellAttributes.Bold),
                     style.Attributes.HasFlag(CellAttributes.Italic),
-                    style.Attributes.HasFlag(CellAttributes.Faint)));
+                    style.Attributes.HasFlag(CellAttributes.Faint),
+                    GlyphClassifier.RoleOf(style.Text)));
             }
 
             builder.Clear();
@@ -108,8 +109,9 @@ public static class RenderPlanner
                 continue;
             }
 
-            // Wide characters are drawn on their own so they cannot shift neighbours off the grid.
-            if (cell.Width != 1)
+            // Wide characters and symbol glyphs are drawn on their own so a font whose advance differs from the
+            // cell width cannot shift neighbours off the grid.
+            if (cell.Width != 1 || GlyphClassifier.RoleOf(cell.Text) == FontRole.Symbols)
             {
                 Flush();
                 runStart = column;
@@ -140,6 +142,7 @@ public static class RenderPlanner
 
     private static bool SameTextStyle(TerminalCell a, TerminalCell b) =>
         a.EffectiveForeground == b.EffectiveForeground
+        && GlyphClassifier.RoleOf(a.Text) == GlyphClassifier.RoleOf(b.Text)
         && (a.Attributes & (CellAttributes.Bold | CellAttributes.Italic | CellAttributes.Faint))
             == (b.Attributes & (CellAttributes.Bold | CellAttributes.Italic | CellAttributes.Faint));
 
