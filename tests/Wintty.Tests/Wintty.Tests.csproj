@@ -19,6 +19,7 @@
   <ItemGroup>
     <ProjectReference Include="..\..\src\Wintty.Core\Wintty.Core.csproj" />
     <ProjectReference Include="..\..\src\Wintty.Ghostty\Wintty.Ghostty.csproj" />
+    <ProjectReference Include="..\..\src\Wintty.Render\Wintty.Render.csproj" />
   </ItemGroup>
 
 </Project>
