@@ -1,6 +1,6 @@
 # 02 .NET solution and tag-derived versioning
 
-Status: todo
+Status: done
 
 **Goal:** buildable solution with the version injected from the git tag.
 

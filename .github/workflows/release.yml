@@ -18,7 +18,7 @@ jobs:
       - uses: actions/checkout@v4
         with: { fetch-depth: 0 }
       - uses: actions/setup-dotnet@v4
-        with: { dotnet-version: 9.0.x }
+        with: { dotnet-version: 8.0.x }
       - name: Derive version from tag
         id: ver
         shell: bash
@@ -29,7 +29,7 @@ jobs:
       - name: Publish
         run: >
           dotnet publish src/Wintty.App/Wintty.App.csproj -c Release
-          -r win-${{ matrix.arch }} --self-contained
+          -r win-${{ matrix.arch }} -p:Platform=${{ matrix.arch }} --self-contained
           -p:Version=${{ steps.ver.outputs.version }}
           -o artifacts/wintty-${{ matrix.arch }}
       - name: Zip
