@@ -20,6 +20,10 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private IntPtr _rowCells;
     private IntPtr _keyEncoder;
     private IntPtr _keyEvent;
+    private readonly GhosttyNativeLibrary.WritePtyCallback _writePtyCallback;
+    private readonly GhosttyNativeLibrary.SizeCallback _sizeCallback;
+    private int _cellWidthPixels;
+    private int _cellHeightPixels;
 
     internal GhosttyTerminalEngine(GhosttyNativeLibrary native, TerminalEngineOptions options)
     {
@@ -33,6 +37,19 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             },
             out _handle);
         ThrowIfFailed(status, "create terminal");
+
+        // Keep a reference for the engine's lifetime: native code holds the function pointer.
+        _writePtyCallback = OnWritePty;
+        ThrowIfFailed(
+            native.TerminalSet(_handle, GhosttyNativeLibrary.TerminalOptionWritePty, Marshal.GetFunctionPointerForDelegate(_writePtyCallback)),
+            "register the reply callback");
+
+        _sizeCallback = OnSizeQuery;
+        ThrowIfFailed(
+            native.TerminalSet(_handle, GhosttyNativeLibrary.TerminalOptionSize, Marshal.GetFunctionPointerForDelegate(_sizeCallback)),
+            "register the size callback");
+        SetDefaultColor(GhosttyNativeLibrary.TerminalOptionColorForeground, options.EffectiveForeground);
+        SetDefaultColor(GhosttyNativeLibrary.TerminalOptionColorBackground, options.EffectiveBackground);
         Columns = options.Columns;
         Rows = options.Rows;
 
@@ -50,6 +67,9 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             throw;
         }
     }
+
+    /// <inheritdoc />
+    public TerminalResponseHandler? ResponseHandler { get; set; }
 
     /// <inheritdoc />
     public int Columns { get; private set; }
@@ -89,14 +109,28 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     }
 
     /// <inheritdoc />
+    public void SetCellSize(int widthPixels, int heightPixels)
+    {
+        ThrowIfDisposed();
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(widthPixels, 0);
+        ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(heightPixels, 0);
+        _cellWidthPixels = widthPixels;
+        _cellHeightPixels = heightPixels;
+
+        // Re-send the grid size so the terminal learns the new pixel dimensions.
+        Resize(Columns, Rows);
+    }
+
+    /// <inheritdoc />
     public void Resize(int columns, int rows)
     {
         ThrowIfDisposed();
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(columns, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(rows, 0);
 
-        // Cell pixel size is unknown until the renderer exists; 0 means "not provided".
-        var status = _native.TerminalResize(_handle, checked((ushort)columns), checked((ushort)rows), 0, 0);
+        // A pixel size of 0 means "not provided" until the renderer has measured a cell.
+        var status = _native.TerminalResize(
+            _handle, checked((ushort)columns), checked((ushort)rows), (uint)_cellWidthPixels, (uint)_cellHeightPixels);
         ThrowIfFailed(status, "resize terminal");
         Columns = columns;
         Rows = rows;
@@ -187,6 +221,57 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         FreeAndClear(ref _rowIterator, _native.RowIteratorFree);
         FreeAndClear(ref _renderState, _native.RenderStateFree);
         _native.TerminalFree(handle);
+    }
+
+    private unsafe void SetDefaultColor(int option, TerminalColor color)
+    {
+        var native = new GhosttyNativeLibrary.NativeColor { Red = color.Red, Green = color.Green, Blue = color.Blue };
+        ThrowIfFailed(_native.TerminalSet(_handle, option, (IntPtr)(&native)), "set a default colour");
+    }
+
+    private unsafe byte OnSizeQuery(IntPtr terminal, IntPtr userdata, IntPtr output)
+    {
+        // Exceptions must never cross into native code. Returning 0 means "no answer available".
+        try
+        {
+            if (output == IntPtr.Zero)
+            {
+                return 0;
+            }
+
+            // Pixel sizes of 0 mean "unknown" until the renderer has measured a cell; the character grid is
+            // always known, so queries that only need it are still answered.
+
+            *(GhosttyNativeLibrary.NativeSizeReport*)output = new GhosttyNativeLibrary.NativeSizeReport
+            {
+                Rows = checked((ushort)Rows),
+                Columns = checked((ushort)Columns),
+                CellWidth = (uint)Math.Max(0, _cellWidthPixels),
+                CellHeight = (uint)Math.Max(0, _cellHeightPixels),
+            };
+            return 1;
+        }
+        catch (Exception)
+        {
+            return 0;
+        }
+    }
+
+    private unsafe void OnWritePty(IntPtr terminal, IntPtr userdata, IntPtr data, nuint length)
+    {
+        // Exceptions must never cross into native code.
+        try
+        {
+            var handler = ResponseHandler;
+            if (handler is not null && data != IntPtr.Zero && length > 0)
+            {
+                handler(new ReadOnlySpan<byte>((void*)data, checked((int)length)));
+            }
+        }
+        catch (Exception)
+        {
+            // A failing consumer must not take the process down; the reply is dropped.
+        }
     }
 
     private static void FreeAndClear(ref IntPtr pointer, Action<IntPtr> free)

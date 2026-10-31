@@ -36,6 +36,7 @@ public sealed partial class TerminalControl : UserControl
     private string? _symbolFont;
     private bool _decorationErrorLogged;
     private bool _snapshotErrorLogged;
+    private (int Width, int Height) _cellPixels;
     private readonly DispatcherQueueTimer _blinkTimer;
     private TerminalSession? _session;
     private float _cellWidth;
@@ -115,6 +116,7 @@ public sealed partial class TerminalControl : UserControl
         };
 
         _session = await TerminalSession.StartAsync(_gateway, _gateway, options);
+        ApplyCellPixelSize();
         var dispatcher = DispatcherQueue;
         _session.Updated += (_, _) =>
         {
@@ -174,6 +176,25 @@ public sealed partial class TerminalControl : UserControl
             ? _grid
             : GridSizer.Compute(Canvas.ActualWidth, Canvas.ActualHeight, _cellWidth, _cellHeight, SurfacePadding);
 
+    // Terminal size queries are answered in physical pixels, so convert from DIPs with the current display scale.
+    private void ApplyCellPixelSize()
+    {
+        if (_session is null || _cellWidth <= 0 || _cellHeight <= 0)
+        {
+            return;
+        }
+
+        var scale = XamlRoot?.RasterizationScale ?? 1.0;
+        var pixels = ((int)Math.Round(_cellWidth * scale), (int)Math.Round(_cellHeight * scale));
+        if (pixels == _cellPixels || pixels.Item1 <= 0 || pixels.Item2 <= 0)
+        {
+            return;
+        }
+
+        _cellPixels = pixels;
+        _session.SetCellSize(pixels.Item1, pixels.Item2);
+    }
+
     private void OnCanvasSizeChanged(object sender, SizeChangedEventArgs e)
     {
         var grid = ComputeGrid();
@@ -184,6 +205,7 @@ public sealed partial class TerminalControl : UserControl
 
         _grid = grid;
         _session?.Resize(grid.Columns, grid.Rows);
+        ApplyCellPixelSize();
         Canvas.Invalidate();
     }
 

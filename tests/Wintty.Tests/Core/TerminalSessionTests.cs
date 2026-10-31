@@ -217,4 +217,73 @@ public class TerminalSessionTests
 
         Assert.Throws<ObjectDisposedException>(() => session.SendKey(new KeyInput(TerminalKey.A)));
     }
+
+    [Fact]
+    public async Task EngineReplies_AreWrittenToTheProcessInput()
+    {
+        var (session, engines, ptys) = await StartAsync();
+        using (session)
+        {
+            engines.Created[0].Respond("\u001b[?62;22c"u8.ToArray());
+
+            Assert.Equal("\u001b[?62;22c", Encoding.UTF8.GetString(ptys.Connection.InputBuffer.ToArray()));
+        }
+    }
+
+    [Fact]
+    public async Task EngineReplies_AndTyping_ShareOneOrderedStream()
+    {
+        var (session, engines, ptys) = await StartAsync();
+        using (session)
+        {
+            session.SendInput("a"u8);
+            engines.Created[0].Respond("R"u8.ToArray());
+            session.SendInput("b"u8);
+
+            Assert.Equal("aRb", Encoding.UTF8.GetString(ptys.Connection.InputBuffer.ToArray()));
+        }
+    }
+
+    [Fact]
+    public async Task EngineReplies_WhenTheProcessInputIsClosed_AreDroppedWithoutThrowing()
+    {
+        var (session, engines, ptys) = await StartAsync();
+        using (session)
+        {
+            ptys.Connection.InputOverride = new ThrowingStream();
+
+            engines.Created[0].Respond("x"u8.ToArray());
+        }
+    }
+
+    [Fact]
+    public async Task Dispose_DetachesTheReplyHandler()
+    {
+        var (session, engines, _) = await StartAsync();
+
+        session.Dispose();
+
+        Assert.Null(engines.Created[0].ResponseHandler);
+    }
+
+    [Fact]
+    public async Task SetCellSize_ForwardsToTheEngine()
+    {
+        var (session, engines, _) = await StartAsync();
+        using (session)
+        {
+            session.SetCellSize(9, 19);
+
+            Assert.Equal((9, 19), engines.Created[0].CellSize);
+        }
+    }
+
+    [Fact]
+    public async Task SetCellSize_AfterDispose_Throws()
+    {
+        var (session, _, _) = await StartAsync();
+        session.Dispose();
+
+        Assert.Throws<ObjectDisposedException>(() => session.SetCellSize(9, 19));
+    }
 }
