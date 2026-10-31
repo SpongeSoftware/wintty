@@ -26,6 +26,10 @@ Maintainers release by pushing a tag `vX.Y.Z`. The version is taken from the tag
 2. `dotnet build` and `dotnet test` must pass.
 3. Open a PR with a conventional title.
 
+## Merging
+
+`main` is protected: changes land through pull requests that pass the `build`, `docs` and `commits` checks, with linear history and resolved conversations. PRs are **squash-merged**, and the squash commit takes the PR title and description, so the **PR title must be a Conventional Commit** (this drives the changelog and version notes). Merge commits and rebase merges are disabled; merged branches are deleted automatically.
+
 ## Engineering standards
 
 - **Tests:** aim for full coverage; new code ships with tests. CI enforces a minimum line coverage (currently 90%; raise it as coverage grows, never lower it).
