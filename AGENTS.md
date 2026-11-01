@@ -58,6 +58,7 @@ When adding behaviour, put it in the lowest layer that can own it and expose it 
 
 - `src/` projects, `tests/Wintty.Tests` (xUnit), `docs/` (Astro Starlight site, published to GitHub Pages), `scripts/` (release helpers), `.github/` (workflows, CODEOWNERS, templates).
 - Work items are tracked as GitHub issues (see `docs/agents/issue-tracker.md`); the backlog is at https://github.com/SpongeSoftware/wintty/issues.
+- `GLOSSARY.md` defines the project's vocabulary; use its terms. `docs/adr/` records the hard-to-reverse decisions and why. Read both before changing architecture, and surface any conflict with an ADR.
 - Human contributor guidance is in `CONTRIBUTING.md`; this file is for agents.
 
 ## Agent skills
