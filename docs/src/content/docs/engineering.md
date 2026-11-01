@@ -32,3 +32,16 @@ wintty targets **.NET 10** (LTS). C# union types arrive with C# 15 / .NET 11; we
 The gate measures the assemblies the test project references: `Wintty.Core`, `Wintty.Ghostty`, `Wintty.Render` and `Wintty.Input`. `Wintty.App` (the WinUI shell: `TerminalControl`, `MainWindow`, native keyboard calls) is deliberately outside it because it needs a window and a GPU. Logic that can be tested without them belongs in the libraries; the shell only wires it up. Selection, scrolling, mouse encoding, resize debouncing and hit testing already live there. What remains in the shell is pointer, keyboard and clipboard glue, the blink timer, title handling and startup error reporting, which is checked by hand against the real window.
 
 Within the measured assemblies nothing is excluded from coverage.
+
+## Performance
+
+`GhosttyPerformanceTests` (category `Integration`) is the reproducible benchmark; run it with `dotnet test tests/Wintty.Tests -c Release --filter "FullyQualifiedName~GhosttyPerformance" --logger "console;verbosity=detailed"` to print the numbers. It feeds coloured, mixed-width text through the real engine and measures the path a frame takes. Results from a development machine (Windows 11, Release build):
+
+| Measurement | Result |
+| --- | --- |
+| Feeding output to libghostty | about 45 MiB/s (32 MiB in 0.7 s) |
+| Snapshot of a 240 x 70 screen after a change | about 5 ms |
+| Render plan for the same screen | about 2 to 3 ms |
+| Worst frame preparation while output streams in 64 KiB bursts (120 x 40) | under 12 ms |
+
+Two things keep the UI thread free during heavy output: the output pump marks the control for redraw at most once per UI turn (updates are coalesced), and the engine hands out the same immutable snapshot until something changes the screen, so cursor blinks and selection changes redraw without rebuilding every cell. Drawing is Win2D text runs from the render plan; at these numbers there is no case yet for a hand-written glyph atlas or a Direct3D path. The tests assert only loose budgets so that they catch a real regression without failing on a slow machine. Typing latency and sustained UI-thread stalls under a real window still need hands-on measurement.

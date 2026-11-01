@@ -25,6 +25,10 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private readonly GhosttyNativeLibrary.WritePtyCallback _writePtyCallback;
     private readonly GhosttyNativeLibrary.SizeCallback _sizeCallback;
     private int _cellWidthPixels;
+
+    // Snapshots are immutable, so one is reused until something changes the screen (cursor blinks, for example,
+    // redraw without a new snapshot).
+    private TerminalSnapshot? _cachedSnapshot;
     private int _cellHeightPixels;
 
     // Terminal options and render-state fields the wrapper package does not name yet.
@@ -125,6 +129,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 
         fixed (byte* pointer = data)
         {
+            _cachedSnapshot = null;
             _native.TerminalWrite(_handle, (IntPtr)pointer, (nuint)data.Length);
         }
     }
@@ -148,6 +153,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         ThrowIfDisposed();
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(columns, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(rows, 0);
+
+        _cachedSnapshot = null;
 
         // A pixel size of 0 means "not provided" until the renderer has measured a cell.
         var status = _native.TerminalResize(
@@ -278,6 +285,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     public void ScrollViewport(int rows)
     {
         ThrowIfDisposed();
+        _cachedSnapshot = null;
         _native.ScrollViewport(
             _handle,
             new GhosttyNativeLibrary.TerminalScrollViewport
@@ -291,6 +299,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     public void ScrollViewportToBottom()
     {
         ThrowIfDisposed();
+        _cachedSnapshot = null;
         _native.ScrollViewport(_handle, new GhosttyNativeLibrary.TerminalScrollViewport { Tag = ScrollViewportBottom });
     }
 
@@ -298,6 +307,11 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     public TerminalSnapshot CreateSnapshot()
     {
         ThrowIfDisposed();
+        return _cachedSnapshot ??= BuildSnapshot();
+    }
+
+    private TerminalSnapshot BuildSnapshot()
+    {
         ThrowIfFailed(_native.RenderStateUpdate(_renderState, _handle), "update render state");
 
         ThrowIfFailed(_native.RenderStateGetU16(_renderState, GhosttyNativeLibrary.RenderStateDataCols, out var columns), "read columns");
@@ -362,6 +376,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         ArgumentNullException.ThrowIfNull(scheme);
         scheme.Validate();
         ThrowIfDisposed();
+        _cachedSnapshot = null;
 
         SetDefaultColor(GhosttyNativeLibrary.TerminalOptionColorForeground, scheme.Foreground ?? _defaults.EffectiveForeground);
         SetDefaultColor(GhosttyNativeLibrary.TerminalOptionColorBackground, scheme.Background ?? _defaults.EffectiveBackground);
