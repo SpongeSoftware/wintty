@@ -21,6 +21,5 @@ https://github.com/mbadolato/iTerm2-Color-Schemes (MIT License, Copyright (c) 20
 Each scheme remains the work of its original author; this collection includes Catppuccin (MIT,
 https://github.com/catppuccin) and Gruvbox (MIT, Pavel Pertsev, https://github.com/morhetz/gruvbox).
 
-The Bamboo, Bamboo Multiplex and Bamboo Light schemes are derived from the bamboo.nvim colour palettes
-(MIT License, Copyright (c) 2021 Navarasu and ribru17, https://github.com/ribru17/bamboo.nvim). bamboo.nvim does
-not define terminal colours, so the mapping of its colours onto the 16 ANSI slots is wintty's own.
+The Bamboo, Bamboo Multiplex and Bamboo Light schemes are the Ghostty themes shipped with bamboo.nvim
+(MIT License, Copyright (c) 2021 Navarasu and ribru17, https://github.com/ribru17/bamboo.nvim, extras/ghostty).
