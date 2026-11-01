@@ -18,6 +18,9 @@ public sealed class VtEventScanner
     /// <summary>The longest OSC payload that is kept; longer ones are dropped so a runaway program cannot grow memory.</summary>
     public const int MaxPayloadBytes = 1 << 20;
 
+    /// <summary>The longest APC string that is kept; graphics data is sent in chunks well below this.</summary>
+    public const int MaxApcBytes = 8 << 20;
+
     private enum State
     {
         Ground,
@@ -27,10 +30,13 @@ public sealed class VtEventScanner
         OscEscape,
         OtherString,
         OtherStringEscape,
+        ApcString,
+        ApcEscape,
     }
 
     private readonly Action<OscSequence> _onOsc;
     private readonly Action _onBell;
+    private readonly Action<string>? _onApc;
     private readonly List<byte> _buffer = [];
     private State _state = State.Ground;
     private bool _overflowed;
@@ -38,12 +44,17 @@ public sealed class VtEventScanner
     /// <summary>Creates a scanner.</summary>
     /// <param name="onOsc">Called for every complete OSC sequence.</param>
     /// <param name="onBell">Called for every bell character that is not the end of a sequence.</param>
-    public VtEventScanner(Action<OscSequence> onOsc, Action onBell)
+    /// <param name="onApc">
+    /// Called for every complete APC (application program command) string, with its content decoded as UTF-8
+    /// and without the introducer or terminator. The Kitty graphics protocol uses these. Omit to ignore them.
+    /// </param>
+    public VtEventScanner(Action<OscSequence> onOsc, Action onBell, Action<string>? onApc = null)
     {
         ArgumentNullException.ThrowIfNull(onOsc);
         ArgumentNullException.ThrowIfNull(onBell);
         _onOsc = onOsc;
         _onBell = onBell;
+        _onApc = onApc;
     }
 
     /// <summary>Scans the next stretch of program output.</summary>
@@ -102,6 +113,31 @@ public sealed class VtEventScanner
             case State.OtherStringEscape:
                 _state = value == (byte)'\\' ? State.Ground : State.OtherString;
                 break;
+            case State.ApcString:
+                if (value == 0x1b)
+                {
+                    _state = State.ApcEscape;
+                }
+                else
+                {
+                    AppendByte(value);
+                }
+
+                break;
+            case State.ApcEscape:
+                if (value == (byte)'\\')
+                {
+                    FinishApc();
+                }
+                else
+                {
+                    // A lone ESC inside the string is data; keep it and carry on.
+                    AppendByte(0x1b);
+                    AppendByte(value);
+                    _state = State.ApcString;
+                }
+
+                break;
         }
     }
 
@@ -113,8 +149,11 @@ public sealed class VtEventScanner
                 ResetBuffer();
                 _state = State.OscNumber;
                 break;
-            case (byte)'P':
             case (byte)'_':
+                ResetBuffer();
+                _state = State.ApcString;
+                break;
+            case (byte)'P':
             case (byte)'^':
             case (byte)'X':
                 // DCS, APC, PM and SOS strings run to ST; a bell inside one is data, not a bell.
@@ -155,6 +194,29 @@ public sealed class VtEventScanner
         }
 
         _buffer.Add(value);
+    }
+
+    private void AppendByte(byte value)
+    {
+        if (_buffer.Count >= MaxApcBytes)
+        {
+            _overflowed = true;
+            return;
+        }
+
+        _buffer.Add(value);
+    }
+
+    private void FinishApc()
+    {
+        _state = State.Ground;
+        var bytes = _buffer.ToArray();
+        var overflowed = _overflowed;
+        ResetBuffer();
+        if (!overflowed && _onApc is not null)
+        {
+            _onApc(Encoding.UTF8.GetString(bytes));
+        }
     }
 
     private void FinishOsc()
