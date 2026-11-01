@@ -68,12 +68,65 @@ public sealed class TerminalSession : IDisposable
         }
     }
 
-    /// <summary>Sends input bytes (already encoded) to the process.</summary>
+    /// <summary>
+    /// Sends input bytes (already encoded) to the process. Typing returns the view to the live screen, so the
+    /// user sees what they are typing even after scrolling back.
+    /// </summary>
     /// <param name="data">The bytes to send.</param>
     public void SendInput(ReadOnlySpan<byte> data)
     {
         ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            Engine.ScrollViewportToBottom();
+        }
+
         WriteToProcess(data);
+    }
+
+    /// <summary>Scrolls the view through the history.</summary>
+    /// <param name="rows">Rows to move; negative scrolls up towards older output.</param>
+    public void ScrollBy(int rows)
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            Engine.ScrollViewport(rows);
+        }
+    }
+
+    /// <summary>Encodes a mouse event and sends it to the process, if the program asked for mouse reports.</summary>
+    /// <param name="input">The mouse event.</param>
+    /// <returns><see langword="true"/> if a report was sent; <see langword="false"/> if reporting is off.</returns>
+    public bool SendMouse(Input.MouseInput input)
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        byte[] bytes;
+        lock (_engineLock)
+        {
+            bytes = Engine.EncodeMouse(input);
+        }
+
+        if (bytes.Length == 0)
+        {
+            return false;
+        }
+
+        WriteToProcess(bytes);
+        return true;
+    }
+
+    /// <summary>Gets a value indicating whether the program has asked for mouse reports.</summary>
+    public bool MouseTracking
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
+            lock (_engineLock)
+            {
+                return Engine.MouseTracking;
+            }
+        }
     }
 
     private void OnEngineResponse(ReadOnlySpan<byte> data)

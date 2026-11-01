@@ -34,7 +34,23 @@ public static class RenderPlanner
             backgrounds,
             texts,
             decorations,
-            BuildCursor(snapshot, cursorVisible));
+            BuildCursor(snapshot, cursorVisible),
+            BuildScrollThumb(snapshot.Scrollbar));
+    }
+
+    // The thumb has a minimum height so it stays visible and grabbable in very long histories.
+    private const double MinimumThumbHeight = 0.03;
+
+    private static ScrollThumb? BuildScrollThumb(ScrollbarState scrollbar)
+    {
+        if (!scrollbar.IsScrolledBack)
+        {
+            return null;
+        }
+
+        var height = Math.Max(MinimumThumbHeight, (double)scrollbar.Length / scrollbar.Total);
+        var top = Math.Min((double)scrollbar.Offset / scrollbar.Total, 1 - height);
+        return new ScrollThumb(top, height);
     }
 
     private static void AddBackgrounds(TerminalSnapshot snapshot, int row, List<BackgroundRun> output)
