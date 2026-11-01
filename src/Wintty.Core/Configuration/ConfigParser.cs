@@ -17,6 +17,25 @@ public static class ConfigParser
     public static ConfigLoadResult Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
+        var (config, diagnostics) = Run(text, lenient: false);
+        return new ConfigLoadResult(config, diagnostics) { Colors = config.ExplicitColors };
+    }
+
+    /// <summary>
+    /// Parses a theme file, which uses the same format but only contributes colours: options other than the
+    /// colour ones are ignored, as are lines that cannot be read.
+    /// </summary>
+    /// <param name="text">The theme file contents.</param>
+    /// <returns>The colours the theme defines.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="text"/> is <see langword="null"/>.</exception>
+    public static TerminalColorScheme ParseTheme(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        return Run(text, lenient: true).Config.ExplicitColors;
+    }
+
+    private static (WinttyConfig Config, List<ConfigDiagnostic> Diagnostics) Run(string text, bool lenient)
+    {
 
         var config = new WinttyConfig();
         var diagnostics = new List<ConfigDiagnostic>();
@@ -39,14 +58,14 @@ public static class ConfigParser
 
             var key = line[..equals].Trim().ToLowerInvariant();
             var value = Unquote(line[(equals + 1)..].Trim());
-            config = Apply(config, key, value, out var error);
-            if (error is not null)
+            config = Apply(config, key, value, number, out var error);
+            if (error is not null && !lenient)
             {
                 diagnostics.Add(new ConfigDiagnostic(number, error));
             }
         }
 
-        return new ConfigLoadResult(config, diagnostics);
+        return (config, diagnostics);
     }
 
     /// <summary>Parses a colour written as <c>#rrggbb</c>, <c>rrggbb</c>, <c>#rgb</c> or <c>rgb</c>.</summary>
@@ -75,7 +94,7 @@ public static class ConfigParser
         value.Length >= 2 && value[0] == '"' && value[^1] == '"' ? value[1..^1] : value;
 
     // Returns the updated settings; error is set (and the settings unchanged) when the line is rejected.
-    private static WinttyConfig Apply(WinttyConfig config, string key, string value, out string? error)
+    private static WinttyConfig Apply(WinttyConfig config, string key, string value, int line, out string? error)
     {
         var defaults = new WinttyConfig();
         error = null;
@@ -95,6 +114,16 @@ public static class ConfigParser
             case "cursor-style-blink":
                 return TryFlag(value, defaults.CursorBlink, key, out var blink, out error)
                     ? config with { CursorBlink = blink } : config;
+            case "theme":
+                return config with { Theme = value.Length == 0 ? null : value, ThemeLine = value.Length == 0 ? 0 : line };
+            case "foreground":
+                return TryColour(value, key, out var foreground, out error) ? config with { Foreground = foreground } : config;
+            case "background":
+                return TryColour(value, key, out var background, out error) ? config with { Background = background } : config;
+            case "cursor-color":
+                return TryColour(value, key, out var cursor, out error) ? config with { CursorColor = cursor } : config;
+            case "palette":
+                return TryPalette(config.Palette, value, out var palette, out error) ? config with { Palette = palette } : config;
             case "command":
                 return config with { Command = value.Length == 0 ? null : value };
             default:
@@ -139,6 +168,50 @@ public static class ConfigParser
         }
 
         error = $"{key} must be a whole number of zero or more, not '{value}'";
+        return false;
+    }
+
+    private static bool TryColour(string value, string key, out TerminalColor? result, out string? error)
+    {
+        error = null;
+        result = null;
+        if (value.Length == 0)
+        {
+            return true;
+        }
+
+        if (TryParseColor(value, out var color))
+        {
+            result = color;
+            return true;
+        }
+
+        error = $"{key} must be a colour like #rrggbb, not '{value}'";
+        return false;
+    }
+
+    // "palette = N=#rrggbb" adds an entry to the ones already set; an empty value clears them all.
+    private static bool TryPalette(IReadOnlyDictionary<int, TerminalColor> current, string value, out IReadOnlyDictionary<int, TerminalColor> result, out string? error)
+    {
+        error = null;
+        result = current;
+        if (value.Length == 0)
+        {
+            result = WinttyConfig.NoPalette;
+            return true;
+        }
+
+        var separator = value.IndexOf('=');
+        if (separator > 0
+            && int.TryParse(value[..separator].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+            && index < TerminalColorScheme.PaletteSize
+            && TryParseColor(value[(separator + 1)..].Trim(), out var color))
+        {
+            result = new Dictionary<int, TerminalColor>(current) { [index] = color };
+            return true;
+        }
+
+        error = $"palette must look like '0=#rrggbb' with an index from 0 to 255, not '{value}'";
         return false;
     }
 

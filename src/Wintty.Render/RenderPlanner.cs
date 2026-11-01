@@ -210,6 +210,6 @@ public static class RenderPlanner
         }
 
         var cell = snapshot[cursor.Column, cursor.Row];
-        return new CursorShape(cursor.Row, cursor.Column, cell.Width == 2 ? 2 : 1, cursor.Style, snapshot.DefaultForeground);
+        return new CursorShape(cursor.Row, cursor.Column, cell.Width == 2 ? 2 : 1, cursor.Style, cursor.Color ?? snapshot.DefaultForeground);
     }
 }

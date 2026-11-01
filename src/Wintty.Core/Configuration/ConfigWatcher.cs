@@ -7,6 +7,7 @@ namespace Wintty.Core.Configuration;
 public sealed class ConfigWatcher : IDisposable
 {
     private readonly string _path;
+    private readonly string? _themesDirectory;
     private readonly Action<ConfigLoadResult> _onReload;
     private readonly FileSystemWatcher _watcher;
     private readonly Timer _timer;
@@ -17,10 +18,11 @@ public sealed class ConfigWatcher : IDisposable
     /// <param name="path">The config file; its folder is created if missing.</param>
     /// <param name="debounce">How long changes must stop before the file is reloaded.</param>
     /// <param name="onReload">Called, on a thread-pool thread, with every reload result.</param>
+    /// <param name="themesDirectory">Folder of user theme files used to resolve <c>theme</c>, or <see langword="null"/>.</param>
     /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
     /// <exception cref="ArgumentNullException"><paramref name="onReload"/> is <see langword="null"/>.</exception>
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="debounce"/> is negative.</exception>
-    public ConfigWatcher(string path, TimeSpan debounce, Action<ConfigLoadResult> onReload)
+    public ConfigWatcher(string path, TimeSpan debounce, Action<ConfigLoadResult> onReload, string? themesDirectory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         ArgumentNullException.ThrowIfNull(onReload);
@@ -29,6 +31,7 @@ public sealed class ConfigWatcher : IDisposable
         _path = Path.GetFullPath(path);
         _debounce = debounce;
         _onReload = onReload;
+        _themesDirectory = themesDirectory;
         var directory = Path.GetDirectoryName(_path)!;
         Directory.CreateDirectory(directory);
 
@@ -78,6 +81,6 @@ public sealed class ConfigWatcher : IDisposable
             return;
         }
 
-        _onReload(ConfigLoader.Load(_path));
+        _onReload(ConfigLoader.Load(_path, _themesDirectory));
     }
 }

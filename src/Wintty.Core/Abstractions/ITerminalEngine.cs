@@ -50,6 +50,13 @@ public interface ITerminalEngine : IDisposable
     /// <param name="heightPixels">Cell height in pixels; must be positive.</param>
     void SetCellSize(int widthPixels, int heightPixels);
 
+    /// <summary>
+    /// Sets the default colours, cursor colour and palette. Anything the scheme leaves unset returns to the
+    /// terminal's built-in value, so each call fully replaces the previous scheme.
+    /// </summary>
+    /// <param name="scheme">The colours to use.</param>
+    void SetColors(TerminalColorScheme scheme);
+
     /// <summary>Resizes the grid.</summary>
     /// <param name="columns">New width in cells; must be positive.</param>
     /// <param name="rows">New height in cells; must be positive.</param>

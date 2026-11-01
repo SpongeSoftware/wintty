@@ -9,16 +9,24 @@ public static class ConfigLoader
 
     /// <summary>Loads and parses a config file. A missing file is not an error and yields the defaults.</summary>
     /// <param name="path">The file to read.</param>
-    /// <returns>The settings, with a whole-file diagnostic if the file could not be read.</returns>
+    /// <param name="themesDirectory">Folder of user theme files, or <see langword="null"/> to use built-in themes only.</param>
+    /// <returns>The settings and resolved colours, with a whole-file diagnostic if the file could not be read.</returns>
     /// <exception cref="ArgumentException"><paramref name="path"/> is empty.</exception>
-    public static ConfigLoadResult Load(string path)
+    public static ConfigLoadResult Load(string path, string? themesDirectory = null)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(path);
         try
         {
-            return File.Exists(path)
-                ? ConfigParser.Parse(ReadShared(path))
-                : new ConfigLoadResult(new WinttyConfig(), []);
+            if (!File.Exists(path))
+            {
+                return new ConfigLoadResult(new WinttyConfig(), []);
+            }
+
+            var parsed = ConfigParser.Parse(ReadShared(path));
+            var diagnostics = parsed.Diagnostics.ToList();
+            var colors = ThemeCatalog.Resolve(parsed.Config, themesDirectory, diagnostics);
+            diagnostics.Sort((a, b) => a.Line.CompareTo(b.Line));
+            return new ConfigLoadResult(parsed.Config, diagnostics) { Colors = colors };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

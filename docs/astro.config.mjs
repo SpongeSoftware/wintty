@@ -17,7 +17,7 @@ export default defineConfig({
         : [],
       sidebar: [
         { label: 'Getting started', items: ['install', 'download'] },
-        { label: 'Reference', items: ['configuration', 'keybindings', 'architecture'] },
+        { label: 'Reference', items: ['configuration', 'themes', 'keybindings', 'architecture'] },
         { label: 'Project', items: ['engineering', 'contributing', 'changelog'] },
       ],
     }),

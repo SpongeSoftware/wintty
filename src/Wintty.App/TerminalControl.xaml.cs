@@ -105,7 +105,7 @@ public sealed partial class TerminalControl : UserControl
 
     private async Task StartSessionAsync()
     {
-        var loaded = ConfigLoader.Load(ConfigLoader.DefaultPath);
+        var loaded = ConfigLoader.Load(ConfigLoader.DefaultPath, ThemeCatalog.DefaultUserDirectory);
         _config = loaded.Config;
         ReportConfigProblems(loaded);
         MeasureCell();
@@ -127,7 +127,9 @@ public sealed partial class TerminalControl : UserControl
         _configWatcher = new ConfigWatcher(
             ConfigLoader.DefaultPath,
             TimeSpan.FromMilliseconds(250),
-            result => dispatcher.TryEnqueue(() => ApplyConfig(result)));
+            result => dispatcher.TryEnqueue(() => ApplyConfig(result)),
+            ThemeCatalog.DefaultUserDirectory);
+        _session.SetColors(loaded.Colors);
         _session.Updated += (_, _) =>
         {
             if (Interlocked.Exchange(ref _invalidatePending, 1) == 0)
@@ -154,6 +156,7 @@ public sealed partial class TerminalControl : UserControl
     private void ApplyConfig(ConfigLoadResult result)
     {
         _config = result.Config;
+        _session?.SetColors(result.Colors);
         ReportConfigProblems(result);
         _formats.Clear();
         MeasureCell();
