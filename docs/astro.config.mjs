@@ -11,6 +11,14 @@ export default defineConfig({
   integrations: [
     starlight({
       title: 'wintty',
+      logo: {
+        light: './src/assets/logo-light.svg',
+        dark: './src/assets/logo-dark.svg',
+        alt: 'wintty',
+        replacesTitle: true,
+      },
+      favicon: '/favicon.svg',
+      head: [{ tag: 'link', attrs: { rel: 'alternate icon', href: `${name ? `/${name}` : ''}/favicon.ico`, sizes: '48x48' } }],
       description: 'A Windows terminal built on libghostty-vt.',
       social: owner
         ? [{ icon: 'github', label: 'GitHub', href: `https://github.com/${repo}` }]
