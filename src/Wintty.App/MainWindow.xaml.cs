@@ -101,6 +101,19 @@ public sealed partial class MainWindow : Window
             case TerminalAction.GotoSplitDown:
                 GotoSplit(FocusDirection.Down);
                 break;
+            case TerminalAction.ToggleFullscreen:
+                AppWindow.SetPresenter(
+                    AppWindow.Presenter.Kind == Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen
+                        ? Microsoft.UI.Windowing.AppWindowPresenterKind.Default
+                        : Microsoft.UI.Windowing.AppWindowPresenterKind.FullScreen);
+                break;
+            case TerminalAction.NewWindow:
+                if (Environment.ProcessPath is { } exe)
+                {
+                    System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(exe) { UseShellExecute = false });
+                }
+
+                break;
             case TerminalAction.ResizePaneLeft:
                 ResizeFocused(FocusDirection.Left);
                 break;

@@ -21,6 +21,11 @@ Every action has a name you can bind in the [config file](/wintty/configuration/
 | `goto_split:up` | `ctrl+alt+up` | Move focus to the pane above. |
 | `goto_split:down` | `ctrl+alt+down` | Move focus to the pane below. |
 | `toggle_split_zoom` | `ctrl+shift+enter` | Make the focused pane fill the tab, or put it back. |
+| `increase_font_size` | `ctrl+equal` | Make the text of the focused pane larger. |
+| `decrease_font_size` | `ctrl+minus` | Make the text of the focused pane smaller. |
+| `reset_font_size` | `ctrl+0` | Return the focused pane to the configured font size. |
+| `toggle_fullscreen` | `f11` | Switch the window between full screen and normal. |
+| `new_window` | `ctrl+shift+n` | Open another wintty window. |
 | `resize_pane:left` | `ctrl+alt+shift+left` | Move the divider next to the focused pane to the left. |
 | `resize_pane:right` | `ctrl+alt+shift+right` | Move the divider next to the focused pane to the right. |
 | `resize_pane:up` | `ctrl+alt+shift+up` | Move the divider next to the focused pane up. |

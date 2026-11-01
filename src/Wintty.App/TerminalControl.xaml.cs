@@ -53,6 +53,7 @@ public sealed partial class TerminalControl : UserControl
     private string? _startupError;
     private MouseButton _heldButton;
     private bool _started;
+    private float? _fontSizeOverride;
     private readonly Windows.UI.ViewManagement.UISettings _uiSettings = new();
     private ResizeDebouncer? _resizer;
     private readonly SelectionController _selection = new();
@@ -236,6 +237,12 @@ public sealed partial class TerminalControl : UserControl
     // the shell command and scrollback only affect terminals started afterwards.
     private void ApplyConfig(ConfigLoadResult result)
     {
+        if (result.Config.FontSize != _config.FontSize)
+        {
+            // Editing the size in the config is a deliberate new choice, so it replaces any zoom.
+            _fontSizeOverride = null;
+        }
+
         _config = result.Config;
         _bindings = result.Bindings;
         _session?.SetColors(result.Colors);
@@ -380,7 +387,7 @@ public sealed partial class TerminalControl : UserControl
             format = new CanvasTextFormat
             {
                 FontFamily = role == FontRole.Symbols && _symbolFont is not null ? _symbolFont : _config.FontFamily,
-                FontSize = _config.FontSize,
+                FontSize = EffectiveFontSize,
                 FontWeight = bold ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.Normal,
                 FontStyle = italic ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal,
                 WordWrapping = CanvasWordWrapping.NoWrap,
@@ -854,7 +861,26 @@ public sealed partial class TerminalControl : UserControl
 
     private static bool IsImplemented(TerminalAction action) => action is
         TerminalAction.CopyToClipboard or TerminalAction.PasteFromClipboard or TerminalAction.ScrollPageUp
-        or TerminalAction.ScrollPageDown or TerminalAction.ScrollToTop or TerminalAction.ScrollToBottom;
+        or TerminalAction.ScrollPageDown or TerminalAction.ScrollToTop or TerminalAction.ScrollToBottom
+        or TerminalAction.IncreaseFontSize or TerminalAction.DecreaseFontSize or TerminalAction.ResetFontSize;
+
+    // The zoom actions change this pane only, and last until the config's size is changed or the zoom is reset.
+    private float EffectiveFontSize => _fontSizeOverride ?? _config.FontSize;
+
+    private void ZoomFont(int steps)
+    {
+        _fontSizeOverride = steps == 0 ? null : FontSizing.Zoom(EffectiveFontSize, steps);
+        _formats.Clear();
+        MeasureCell();
+        var grid = ComputeGrid();
+        if (grid != _grid)
+        {
+            _grid = grid;
+            _resizer?.ApplyNow(grid.Columns, grid.Rows);
+        }
+
+        ApplyCellPixelSize();
+    }
 
     private void Execute(TerminalAction action)
     {
@@ -877,6 +903,15 @@ public sealed partial class TerminalControl : UserControl
                 break;
             case TerminalAction.ScrollToBottom:
                 _session?.ScrollToBottom();
+                break;
+            case TerminalAction.IncreaseFontSize:
+                ZoomFont(1);
+                break;
+            case TerminalAction.DecreaseFontSize:
+                ZoomFont(-1);
+                break;
+            case TerminalAction.ResetFontSize:
+                ZoomFont(0);
                 break;
             default:
                 ActionRequested?.Invoke(this, action);
