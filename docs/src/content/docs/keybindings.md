@@ -21,6 +21,11 @@ Every action has a name you can bind in the [config file](/wintty/configuration/
 | `goto_split:up` | `ctrl+alt+up` | Move focus to the pane above. |
 | `goto_split:down` | `ctrl+alt+down` | Move focus to the pane below. |
 | `toggle_split_zoom` | `ctrl+shift+enter` | Make the focused pane fill the tab, or put it back. |
+| `resize_pane:left` | `ctrl+alt+shift+left` | Move the divider next to the focused pane to the left. |
+| `resize_pane:right` | `ctrl+alt+shift+right` | Move the divider next to the focused pane to the right. |
+| `resize_pane:up` | `ctrl+alt+shift+up` | Move the divider next to the focused pane up. |
+| `resize_pane:down` | `ctrl+alt+shift+down` | Move the divider next to the focused pane down. |
+| `equalize_splits` | `ctrl+shift+equal` | Give every split in the tab an equal share. |
 | `scroll_page_up` | `shift+page_up` | Scroll the history up by one screen. |
 | `scroll_page_down` | `shift+page_down` | Scroll the history down by one screen. |
 | `scroll_to_top` | `shift+home` | Scroll to the oldest line. |

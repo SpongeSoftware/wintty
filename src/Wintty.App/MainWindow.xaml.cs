@@ -101,6 +101,27 @@ public sealed partial class MainWindow : Window
             case TerminalAction.GotoSplitDown:
                 GotoSplit(FocusDirection.Down);
                 break;
+            case TerminalAction.ResizePaneLeft:
+                ResizeFocused(FocusDirection.Left);
+                break;
+            case TerminalAction.ResizePaneRight:
+                ResizeFocused(FocusDirection.Right);
+                break;
+            case TerminalAction.ResizePaneUp:
+                ResizeFocused(FocusDirection.Up);
+                break;
+            case TerminalAction.ResizePaneDown:
+                ResizeFocused(FocusDirection.Down);
+                break;
+            case TerminalAction.EqualizeSplits:
+                _model.EqualizeSplits();
+                if (_model.Selected is { } equalised)
+                {
+                    Rebuild(equalised);
+                    FocusPane(equalised.Focused);
+                }
+
+                break;
             case TerminalAction.ToggleSplitZoom:
                 _model.ToggleZoom();
                 if (_model.Selected is { } zoomed)
@@ -110,6 +131,15 @@ public sealed partial class MainWindow : Window
                 }
 
                 break;
+        }
+    }
+
+    private void ResizeFocused(FocusDirection direction)
+    {
+        if (_model.ResizeFocused(direction) && _model.Selected is { } tab)
+        {
+            Rebuild(tab);
+            FocusPane(tab.Focused);
         }
     }
 

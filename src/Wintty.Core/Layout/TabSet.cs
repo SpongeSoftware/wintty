@@ -235,6 +235,32 @@ public sealed class TabSet
         return next;
     }
 
+    /// <summary>Moves a divider next to the focused pane of the selected tab.</summary>
+    /// <param name="direction">Which way the divider moves.</param>
+    /// <param name="amount">How far, as a share of the split; the default is a twentieth.</param>
+    /// <returns><see langword="true"/> when a divider was moved.</returns>
+    public bool ResizeFocused(FocusDirection direction, double amount = 0.05)
+    {
+        if (Selected is not { Zoomed: null } tab)
+        {
+            return false;
+        }
+
+        var resized = PaneLayout.Resize(tab.Root, tab.Focused, direction, amount);
+        var changed = !ReferenceEquals(resized, tab.Root) && resized != tab.Root;
+        tab.Root = resized;
+        return changed;
+    }
+
+    /// <summary>Gives every split of the selected tab an equal share.</summary>
+    public void EqualizeSplits()
+    {
+        if (Selected is { } tab)
+        {
+            tab.Root = PaneLayout.Equalize(tab.Root);
+        }
+    }
+
     /// <summary>Zooms the focused pane of the selected tab to fill it, or puts it back.</summary>
     public void ToggleZoom()
     {
