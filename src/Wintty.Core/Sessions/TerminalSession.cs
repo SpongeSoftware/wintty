@@ -1,4 +1,5 @@
 using Wintty.Core.Abstractions;
+using Wintty.Core.Events;
 
 namespace Wintty.Core.Sessions;
 
@@ -13,12 +14,14 @@ public sealed class TerminalSession : IDisposable
     private readonly Task _pump;
     private readonly object _engineLock = new();
     private readonly object _inputLock = new();
+    private readonly VtEventScanner _scanner;
     private int _disposed;
 
     private TerminalSession(ITerminalEngine engine, IPtyConnection pty)
     {
         Engine = engine;
         _pty = pty;
+        _scanner = new VtEventScanner(OnOsc, () => BellRang?.Invoke(this, EventArgs.Empty));
         engine.ResponseHandler = OnEngineResponse;
         _pty.Exited += OnPtyExited;
         _pump = Task.Run(() => PumpAsync(_cts.Token));
@@ -29,6 +32,21 @@ public sealed class TerminalSession : IDisposable
 
     /// <summary>Raised when the child process exits, with its exit code.</summary>
     public event EventHandler<int>? Exited;
+
+    /// <summary>Raised on the output thread when the program rings the bell.</summary>
+    public event EventHandler? BellRang;
+
+    /// <summary>
+    /// Raised on the output thread when the program asks for something on the desktop: a notification, a clipboard
+    /// read or write, progress for the taskbar, or a working-directory report.
+    /// </summary>
+    public event EventHandler<TerminalEvent>? TerminalEventRaised;
+
+    /// <summary>
+    /// The shell's current directory as a Windows path, from its latest OSC 7 report, or <see langword="null"/>
+    /// when it has not reported one or reported a path that exists only inside a Linux distribution.
+    /// </summary>
+    public string? WorkingDirectory { get; private set; }
 
     /// <summary>The terminal state for this session. Hold <see cref="SyncRoot"/> while reading it.</summary>
     public ITerminalEngine Engine { get; }
@@ -202,6 +220,21 @@ public sealed class TerminalSession : IDisposable
         }
     }
 
+    private void OnOsc(OscSequence sequence)
+    {
+        if (TerminalEvent.From(sequence) is not { } terminalEvent)
+        {
+            return;
+        }
+
+        if (terminalEvent is WorkingDirectoryReported { WindowsPath: { } path })
+        {
+            WorkingDirectory = path;
+        }
+
+        TerminalEventRaised?.Invoke(this, terminalEvent);
+    }
+
     private void OnEngineResponse(ReadOnlySpan<byte> data)
     {
         if (_disposed != 0)
@@ -337,6 +370,7 @@ public sealed class TerminalSession : IDisposable
                     break;
                 }
 
+                _scanner.Feed(buffer.AsSpan(0, read));
                 lock (_engineLock)
                 {
                     if (_disposed != 0)

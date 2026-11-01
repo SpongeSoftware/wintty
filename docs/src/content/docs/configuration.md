@@ -5,6 +5,23 @@ description: wintty configuration reference.
 
 wintty reads `%APPDATA%\wintty\config`. The file does not exist until you create it; without it every option has its default. Saving the file applies changes to a running window, so you can tune the font and see the result immediately.
 
+## New tabs and splits start in the current directory
+
+If your shell reports its directory, a new tab or split opens where you were. Shells report it with the OSC 7 escape sequence; wintty follows Windows paths (`file://host/C:/Users/me`). Paths that only exist inside a WSL distribution cannot be used as a Windows directory, so tabs opened from such a pane start in the default directory.
+
+- **PowerShell 7:** add this to your profile (`$PROFILE`):
+
+  ```powershell
+  function prompt {
+      $cwd = $executionContext.SessionState.Path.CurrentLocation
+      $uri = ([System.Uri]::new($cwd.ProviderPath)).AbsoluteUri
+      "$([char]27)]7;$uri$([char]7)PS $cwd> "
+  }
+  ```
+
+- **cmd:** set `PROMPT` to include the sequence: `prompt $E]7;file://localhost/$P$E\$P$G` (`$E` is the escape character, `$P` the current directory).
+- **Git Bash:** add this to `~/.bashrc`: `PROMPT_COMMAND='printf "\e]7;file://%s/%s\a" "$HOSTNAME" "$(cygpath -m "$PWD")"'`. Plain bash inside WSL reports Linux paths, which wintty cannot use as a Windows directory (see above).
+
 ## File format
 
 The format follows Ghostty's `key = value` style.
