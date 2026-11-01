@@ -95,6 +95,16 @@ public sealed class TerminalSession : IDisposable
         }
     }
 
+    /// <summary>Returns the view to the live screen without sending anything to the program.</summary>
+    public void ScrollToBottom()
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            Engine.ScrollViewportToBottom();
+        }
+    }
+
     /// <summary>Encodes a mouse event and sends it to the process, if the program asked for mouse reports.</summary>
     /// <param name="input">The mouse event.</param>
     /// <returns><see langword="true"/> if a report was sent; <see langword="false"/> if reporting is off.</returns>

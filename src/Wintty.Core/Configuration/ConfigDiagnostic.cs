@@ -18,4 +18,8 @@ public sealed record ConfigLoadResult(WinttyConfig Config, IReadOnlyList<ConfigD
     /// The colours to apply: the theme named in the file with the file's own colour options layered on top.
     /// </summary>
     public Abstractions.TerminalColorScheme Colors { get; init; } = Abstractions.TerminalColorScheme.Default;
+
+    /// <summary>The key bindings in force: the defaults with the file's <c>keybind</c> lines applied.</summary>
+    public IReadOnlyDictionary<Keybindings.KeyTrigger, Keybindings.TerminalAction> Bindings { get; init; } =
+        Keybindings.Keybinds.Resolve([], false, new List<ConfigDiagnostic>());
 }
