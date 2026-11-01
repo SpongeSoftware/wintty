@@ -11,6 +11,15 @@ internal static unsafe class NativeModes
     /// <summary>DEC private mode 2004: the program asked for pasted text to be wrapped in markers.</summary>
     internal const ushort BracketedPaste = 2004;
 
+    /// <summary>DEC private mode 2026: synchronised output.</summary>
+    internal const ushort SynchronizedOutput = 2026;
+
+    /// <summary>DEC private mode 1004: focus in and out reports.</summary>
+    internal const ushort FocusEvents = 1004;
+
+    /// <summary>DEC private mode 2031: colour scheme change notifications.</summary>
+    internal const ushort ColorSchemeNotifications = 2031;
+
     private const string LibraryName = "ghostty-vt.dll";
 
     private static readonly Lazy<nint> ModeGet = new(Resolve);

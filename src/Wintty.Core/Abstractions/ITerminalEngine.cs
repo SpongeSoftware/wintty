@@ -60,6 +60,18 @@ public interface ITerminalEngine : IDisposable
     /// <returns>The bytes to send to the program.</returns>
     byte[] EncodePaste(string text);
 
+    /// <summary>
+    /// Gets a value indicating whether the program is in the middle of a synchronised update (mode 2026): it has
+    /// asked for the screen not to be presented until it says the frame is complete.
+    /// </summary>
+    bool SynchronizedOutput { get; }
+
+    /// <summary>Gets a value indicating whether the program asked to be told when the window gains or loses focus (mode 1004).</summary>
+    bool FocusEvents { get; }
+
+    /// <summary>Gets a value indicating whether the program asked to be told when the colour scheme changes (mode 2031).</summary>
+    bool ColorSchemeNotifications { get; }
+
     /// <summary>Scrolls the visible rows through the history.</summary>
     /// <param name="rows">Rows to move; negative scrolls up towards older output.</param>
     void ScrollViewport(int rows);

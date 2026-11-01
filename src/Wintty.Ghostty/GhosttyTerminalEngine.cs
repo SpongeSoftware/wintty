@@ -260,6 +260,21 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     }
 
     /// <inheritdoc />
+    public bool SynchronizedOutput => Mode(NativeModes.SynchronizedOutput);
+
+    /// <inheritdoc />
+    public bool FocusEvents => Mode(NativeModes.FocusEvents);
+
+    /// <inheritdoc />
+    public bool ColorSchemeNotifications => Mode(NativeModes.ColorSchemeNotifications);
+
+    private bool Mode(ushort mode)
+    {
+        ThrowIfDisposed();
+        return NativeModes.IsSet(_handle, mode);
+    }
+
+    /// <inheritdoc />
     public unsafe byte[] EncodePaste(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
