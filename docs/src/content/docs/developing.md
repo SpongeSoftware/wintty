@@ -24,6 +24,9 @@ The docs site needs Node 22.23.4 or newer: `cd docs && npm install && npm run bu
 
 ## Run and debug the app
 
+For daily use, and to try features as they land, run `pwsh scripts/run-dev.ps1`. It publishes a self-contained build to `artifacts/wintty-dev` and starts it. `-Pull` fast-forwards `main` first, `-NoBuild` starts the last build, and `-Log` follows `%LOCALAPPDATA%\wintty\wintty.log` afterwards. A running dev build is closed before it is replaced.
+
+
 `dotnet build src/Wintty.App -c Release` writes the app to `src/Wintty.App/bin/x64/Release/net10.0-windows10.0.19041.0/win-x64/`. Startup errors are shown in the window and logged to `%LOCALAPPDATA%\wintty\wintty.log`. A stale build may exist outside the `x64` folder, so check file timestamps before launching.
 
 Open `wintty.sln` in Visual Studio 2022 and set `Wintty.App` as the startup project to debug. For the gateway, start with the integration tests: they exercise libghostty and ConPTY without the UI.
