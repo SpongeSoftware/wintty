@@ -41,6 +41,7 @@ When adding behaviour, put it in the lowest layer that can own it and expose it 
 - **Tests are mandatory for new code.** The goal is full coverage and CI fails below 90% line coverage; raise the gate as coverage improves and never lower it. Use the fakes in `tests/Wintty.Tests/Fakes`. Tests that load the real native library carry `[Trait("Category", "Integration")]` and `[Collection("NativeEnvironment")]` so they run serially.
 - **Pin third-party GitHub Actions to a commit SHA** with the tag in a trailing comment. Dependabot updates them.
 - **Target .NET 10.** C# union types arrive with .NET 11; until then model closed sets as sealed record hierarchies.
+- **New config options are added to `ConfigOptions` as well as `ConfigParser`.** The docs reference table is rendered from `ConfigOptions`; tests fail on any mismatch. Regenerate the page with `WINTTY_UPDATE_DOCS=1 dotnet test tests/Wintty.Tests -c Release`.
 - **Never commit generated output:** `artifacts/`, `coverage.json`, `bin/`, `obj/`. Line endings are LF (`.gitattributes`).
 - **Do not rename or add a dependency on `LibGhostty.Net` anywhere except `Wintty.Ghostty`.**
 

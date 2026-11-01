@@ -32,6 +32,9 @@ command = pwsh.exe -NoLogo
 
 ## Options
 
+This table is generated from the option list in the code (`ConfigOptions`), so it always matches what the app accepts.
+
+<!-- BEGIN GENERATED OPTIONS -->
 | Option | Default | Applies | Description |
 | --- | --- | --- | --- |
 | `font-family` | `Cascadia Mono` | live | Font for terminal text. Private-use symbols still fall back to an installed Nerd Font. |
@@ -46,11 +49,12 @@ command = pwsh.exe -NoLogo
 | `palette` | theme or built-in | live | One palette entry per line as `index=#rrggbb`, index 0 to 255. Repeat the line for more entries. An empty value clears every `palette` line above it. |
 | `scrollback-limit` | `10000` | new terminals | Number of scrollback lines kept. Zero disables scrollback. |
 | `command` | auto-detected | new terminals | Program to run, with arguments. Quote a path that contains spaces: `"C:\Program Files\PowerShell\7\pwsh.exe" -NoLogo`. When unset wintty runs `pwsh.exe` if it is on `PATH`, otherwise `powershell.exe`. |
+<!-- END GENERATED OPTIONS -->
 
 "Live" options change in the running window when the file is saved. "New terminals" options are read when a terminal starts, so they take effect the next time you open one.
 
 :::note
 Selection colours and cursor style are not read yet. They will be added to this table as they are implemented. An option wintty does not know is reported as a problem rather than silently ignored.
 
-Editing a theme file in `%APPDATA%\wintty	hemes` is picked up the next time the config file is saved.
+Editing a theme file in `%APPDATA%\wintty\themes` is picked up the next time the config file is saved.
 :::
