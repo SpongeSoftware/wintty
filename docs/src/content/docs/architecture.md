@@ -62,3 +62,17 @@ Programs ask the terminal questions by writing escape sequences, and wait for a 
 | Status string | DECRQSS | not yet |
 
 The missing colour queries mean programs that probe the background colour (to choose a light or dark theme) fall back to their default.
+
+## Kitty keyboard protocol
+
+Programs enable the protocol with `CSI > flags u`, and libghostty's key encoder then produces the sequences it defines. Integration tests check each flag against the real encoder, including press, repeat and release, modifier-only keys, associated text, the shifted alternate key, and the separate flag stacks of the main and alternate screens.
+
+| Flag | Meaning | Status |
+| --- | --- | --- |
+| 1 | Disambiguate escape codes | verified |
+| 2 | Report event types (press, repeat, release) | verified |
+| 4 | Report alternate keys | shifted key verified; the base-layout key is not sent (see below) |
+| 8 | Report all keys as escape codes, including modifier-only keys | verified |
+| 16 | Report associated text | verified |
+
+**Known gap:** the protocol can also report the key in the standard US layout when a non-US layout is active. wintty passes the layout-produced text and the unshifted code point of the physical key, but not a separate base-layout key, so programs on non-US layouts see the layout key only. Interactive checks (a key-event inspector, Neovim with Kitty keyboard support) still need a person at the keyboard.
