@@ -53,6 +53,7 @@ public sealed partial class TerminalControl : UserControl
     private string? _startupError;
     private MouseButton _heldButton;
     private bool _started;
+    private readonly Windows.UI.ViewManagement.UISettings _uiSettings = new();
     private ResizeDebouncer? _resizer;
     private readonly SelectionController _selection = new();
     private int _clickCount;
@@ -90,7 +91,16 @@ public sealed partial class TerminalControl : UserControl
         Canvas.PointerReleased += OnPointerReleased;
         Canvas.PointerCaptureLost += (_, _) => _heldButton = MouseButton.None;
         Canvas.PointerWheelChanged += OnPointerWheelChanged;
-        GotFocus += (_, _) => PaneActivated?.Invoke(this, EventArgs.Empty);
+        GotFocus += (_, _) =>
+        {
+            PaneActivated?.Invoke(this, EventArgs.Empty);
+            _session?.SetFocus(true);
+        };
+        LostFocus += (_, _) => _session?.SetFocus(false);
+
+        // Programs that asked for colour scheme notifications (mode 2031) are told when Windows switches theme.
+        _uiSettings.ColorValuesChanged += (_, _) =>
+            DispatcherQueue.TryEnqueue(() => _session?.NotifyColorScheme(IsSystemDark()));
 
         // The window moves terminals between containers (tabs, splits), which raises Loaded again, so start only once.
         Loaded += async (_, _) =>
@@ -114,6 +124,12 @@ public sealed partial class TerminalControl : UserControl
 
     /// <summary>The shell's current directory as a Windows path, if it reports one with OSC 7.</summary>
     public string? WorkingDirectory => _session?.WorkingDirectory;
+
+    private bool IsSystemDark()
+    {
+        var background = _uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background);
+        return ((background.R * 299) + (background.G * 587) + (background.B * 114)) / 1000 < 128;
+    }
 
     /// <summary>Gives this terminal keyboard focus.</summary>
     public void FocusTerminal() => Focus(FocusState.Programmatic);

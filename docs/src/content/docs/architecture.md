@@ -76,3 +76,12 @@ Programs enable the protocol with `CSI > flags u`, and libghostty's key encoder 
 | 16 | Report associated text | verified |
 
 **Known gap:** the protocol can also report the key in the standard US layout when a non-US layout is active. wintty passes the layout-produced text and the unshifted code point of the physical key, but not a separate base-layout key, so programs on non-US layouts see the layout key only. Interactive checks (a key-event inspector, Neovim with Kitty keyboard support) still need a person at the keyboard.
+
+## Modern terminal modes
+
+| Mode | Behaviour |
+| --- | --- |
+| 2026 synchronised output | While a program is inside a synchronised update the redraw is held, so a full-screen redraw is shown as one frame. A program that never ends the update is shown after one second. |
+| 1004 focus events | The program is sent `CSI I` / `CSI O` when the terminal gains or loses focus. |
+| 2031 colour scheme notifications | The program is sent `CSI ? 997 ; 1 n` (dark) or `CSI ? 997 ; 2 n` (light) when the Windows app theme changes. The initial query (`CSI ? 996 n`) is not answered yet. |
+| 1016 pixel mouse | Mouse reports use pixel coordinates when requested (positions are already tracked in pixels). |

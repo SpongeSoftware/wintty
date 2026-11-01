@@ -85,6 +85,12 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
 
     public bool BracketedPaste { get; set; }
 
+    public bool SynchronizedOutput { get; set; }
+
+    public bool FocusEvents { get; set; }
+
+    public bool ColorSchemeNotifications { get; set; }
+
     public List<string> Pastes { get; } = [];
 
     public byte[] EncodePaste(string text)

@@ -14,13 +14,17 @@ public sealed class TerminalSession : IDisposable
     private readonly Task _pump;
     private readonly object _engineLock = new();
     private readonly object _inputLock = new();
+    private const int SynchronizedUpdateTimeoutMilliseconds = 1000;
+
     private readonly VtEventScanner _scanner;
+    private readonly Timer _syncTimer;
     private int _disposed;
 
     private TerminalSession(ITerminalEngine engine, IPtyConnection pty)
     {
         Engine = engine;
         _pty = pty;
+        _syncTimer = new Timer(_ => Updated?.Invoke(this, EventArgs.Empty), null, Timeout.Infinite, Timeout.Infinite);
         _scanner = new VtEventScanner(OnOsc, () => BellRang?.Invoke(this, EventArgs.Empty));
         engine.ResponseHandler = OnEngineResponse;
         _pty.Exited += OnPtyExited;
@@ -141,6 +145,46 @@ public sealed class TerminalSession : IDisposable
         }
 
         WriteToProcess(bytes);
+        return true;
+    }
+
+    /// <summary>
+    /// Tells a program that asked for focus reports (mode 1004) that the window gained or lost focus.
+    /// </summary>
+    /// <param name="focused"><see langword="true"/> when the window gained focus.</param>
+    /// <returns><see langword="true"/> if a report was sent.</returns>
+    public bool SetFocus(bool focused)
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            if (!Engine.FocusEvents)
+            {
+                return false;
+            }
+        }
+
+        WriteToProcess(focused ? "\u001b[I"u8 : "\u001b[O"u8);
+        return true;
+    }
+
+    /// <summary>
+    /// Tells a program that asked for colour scheme notifications (mode 2031) that the system theme changed.
+    /// </summary>
+    /// <param name="dark"><see langword="true"/> for a dark scheme, <see langword="false"/> for a light one.</param>
+    /// <returns><see langword="true"/> if a notification was sent.</returns>
+    public bool NotifyColorScheme(bool dark)
+    {
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            if (!Engine.ColorSchemeNotifications)
+            {
+                return false;
+            }
+        }
+
+        WriteToProcess(dark ? "\u001b[?997;1n"u8 : "\u001b[?997;2n"u8);
         return true;
     }
 
@@ -354,12 +398,14 @@ public sealed class TerminalSession : IDisposable
             Engine.Dispose();
         }
 
+        _syncTimer.Dispose();
         _cts.Dispose();
     }
 
     private async Task PumpAsync(CancellationToken token)
     {
         var buffer = new byte[16 * 1024];
+        var holdFrame = false;
         try
         {
             while (!token.IsCancellationRequested)
@@ -379,7 +425,18 @@ public sealed class TerminalSession : IDisposable
                     }
 
                     Engine.Write(buffer.AsSpan(0, read));
+                    holdFrame = Engine.SynchronizedOutput;
                 }
+
+                // A program in a synchronised update (mode 2026) wants the frame shown only once it is complete.
+                // Hold the redraw, but never for long, in case the program forgets to end the update.
+                if (holdFrame)
+                {
+                    _syncTimer.Change(SynchronizedUpdateTimeoutMilliseconds, Timeout.Infinite);
+                    continue;
+                }
+
+                _syncTimer.Change(Timeout.Infinite, Timeout.Infinite);
 
                 Updated?.Invoke(this, EventArgs.Empty);
             }
