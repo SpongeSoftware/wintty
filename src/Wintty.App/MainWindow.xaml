@@ -3,5 +3,14 @@
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
     xmlns:local="using:Wintty.App">
-    <local:TerminalControl x:Name="Terminal" />
+    <TabView
+        x:Name="Tabs"
+        TabWidthMode="Equal"
+        CanReorderTabs="True"
+        CanDragTabs="True"
+        IsAddTabButtonVisible="True"
+        AddTabButtonClick="OnAddTabClicked"
+        TabCloseRequested="OnTabCloseRequested"
+        SelectionChanged="OnTabSelectionChanged"
+        TabItemsChanged="OnTabItemsChanged" />
 </Window>

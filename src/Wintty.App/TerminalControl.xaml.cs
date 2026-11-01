@@ -52,6 +52,7 @@ public sealed partial class TerminalControl : UserControl
     private char _pendingHighSurrogate;
     private string? _startupError;
     private MouseButton _heldButton;
+    private bool _started;
     private ResizeDebouncer? _resizer;
     private readonly SelectionController _selection = new();
     private int _clickCount;
@@ -89,9 +90,30 @@ public sealed partial class TerminalControl : UserControl
         Canvas.PointerReleased += OnPointerReleased;
         Canvas.PointerCaptureLost += (_, _) => _heldButton = MouseButton.None;
         Canvas.PointerWheelChanged += OnPointerWheelChanged;
-        Loaded += async (_, _) => await StartAsync();
-        Unloaded += (_, _) => Shutdown();
+        GotFocus += (_, _) => PaneActivated?.Invoke(this, EventArgs.Empty);
+
+        // The window moves terminals between containers (tabs, splits), which raises Loaded again, so start only once.
+        Loaded += async (_, _) =>
+        {
+            if (!_started)
+            {
+                _started = true;
+                await StartAsync();
+            }
+        };
     }
+
+    /// <summary>Raised on the UI thread when this terminal receives keyboard focus.</summary>
+    public event EventHandler? PaneActivated;
+
+    /// <summary>Raised when a key binding asks for something the window carries out, such as opening a tab.</summary>
+    public event EventHandler<TerminalAction>? ActionRequested;
+
+    /// <summary>Gives this terminal keyboard focus.</summary>
+    public void FocusTerminal() => Focus(FocusState.Programmatic);
+
+    /// <summary>Ends the shell and releases the terminal; the control cannot be reused afterwards.</summary>
+    public void Close() => Shutdown();
 
     /// <summary>Raised on the UI thread when the shell process exits.</summary>
     public event EventHandler? ProcessExited;
@@ -793,7 +815,8 @@ public sealed partial class TerminalControl : UserControl
     // Looks the key up in the bindings from the config; actions that are not built yet pass the key on to the program.
     private bool TryBoundAction(TerminalKey key, KeyModifiers modifiers, KeyAction action)
     {
-        if (!_bindings.TryGetValue(KeyTrigger.From(key, modifiers), out var bound) || !IsImplemented(bound))
+        if (!_bindings.TryGetValue(KeyTrigger.From(key, modifiers), out var bound)
+            || !(IsImplemented(bound) || (ActionRequested is not null && bound != TerminalAction.Unbind)))
         {
             return false;
         }
@@ -831,6 +854,9 @@ public sealed partial class TerminalControl : UserControl
                 break;
             case TerminalAction.ScrollToBottom:
                 _session?.ScrollToBottom();
+                break;
+            default:
+                ActionRequested?.Invoke(this, action);
                 break;
         }
 

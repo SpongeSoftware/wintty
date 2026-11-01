@@ -43,7 +43,7 @@ keybind = alt+f=scroll_page_down
 - `keybind = clear` drops every default; `keybind =` forgets all `keybind` lines above it.
 - If two lines bind the same key to different actions the later one wins and the earlier line is reported.
 - Unknown keys and actions are reported and skipped. Saving the config file applies changes to open windows.
-- Actions for tabs and splits are listed so config files can be written ahead of time; until those features land (#9, #10) their keys pass through to the program.
+- Tab and split actions work in the window: new, close, switch and reorder tabs (drag them), double-click a tab to rename it, split a tab into panes, move focus between panes and zoom one to fill the tab. Pane sizes are fixed at half for now; dragging dividers is planned.
 
 ## Mouse, selection and clipboard
 
