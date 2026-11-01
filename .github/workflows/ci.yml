@@ -41,7 +41,7 @@ jobs:
           dotnet test tests/Wintty.Tests -c Release
           -p:CollectCoverage=true -p:CoverletOutputFormat=cobertura
           -p:CoverletOutput=../../artifacts/coverage/
-          -p:Threshold=90 -p:ThresholdType=line -p:ThresholdStat=total
+          -p:Threshold=95 -p:ThresholdType=line -p:ThresholdStat=total
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         if: always()
         with:

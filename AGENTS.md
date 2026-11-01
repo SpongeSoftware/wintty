@@ -15,7 +15,7 @@ Run from the repository root. The shell is Git Bash or PowerShell on Windows.
 | Build everything | `dotnet build wintty.sln -c Release` |
 | Build as CI does (warnings are errors) | `CI=true dotnet build wintty.sln -c Release` |
 | Run all tests | `dotnet test tests/Wintty.Tests -c Release` |
-| Tests with the coverage gate | `dotnet test tests/Wintty.Tests -c Release -p:CollectCoverage=true -p:Threshold=90 -p:ThresholdType=line -p:ThresholdStat=total` |
+| Tests with the coverage gate | `dotnet test tests/Wintty.Tests -c Release -p:CollectCoverage=true -p:Threshold=95 -p:ThresholdType=line -p:ThresholdStat=total` |
 | Build the docs site (needs Node 22.23.4 or newer) | `cd docs && npm install && npm run build` |
 | Set a version | `-p:Version=1.2.3` (releases take it from the git tag; the default is `0.0.0-dev`) |
 
