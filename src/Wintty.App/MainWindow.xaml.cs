@@ -29,8 +29,10 @@ public sealed partial class MainWindow : Window
 
     private void AddTab()
     {
+        // A new tab starts where the pane you were in is, when its shell reports a directory.
+        var startIn = _model.Selected is { } current && _terminals.TryGetValue(current.Focused, out var source) ? source.WorkingDirectory : null;
         var tab = _model.AddTab();
-        var terminal = CreateTerminal(tab.Focused);
+        var terminal = CreateTerminal(tab.Focused, startIn);
         var host = new Grid();
         _hosts[tab.Id] = host;
         var item = new TabViewItem { Tag = tab.Id, Header = tab.Title, Content = host };
@@ -44,9 +46,9 @@ public sealed partial class MainWindow : Window
         UpdateTitles();
     }
 
-    private TerminalControl CreateTerminal(PaneId pane)
+    private TerminalControl CreateTerminal(PaneId pane, string? startIn = null)
     {
-        var terminal = new TerminalControl();
+        var terminal = new TerminalControl { InitialDirectory = startIn };
         _terminals[pane] = terminal;
         terminal.TitleChanged += (_, title) =>
         {
@@ -118,7 +120,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        CreateTerminal(created);
+        CreateTerminal(created, _terminals.TryGetValue(pane, out var source) ? source.WorkingDirectory : null);
         Rebuild(tab);
         FocusPane(created);
     }

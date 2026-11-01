@@ -109,6 +109,12 @@ public sealed partial class TerminalControl : UserControl
     /// <summary>Raised when a key binding asks for something the window carries out, such as opening a tab.</summary>
     public event EventHandler<TerminalAction>? ActionRequested;
 
+    /// <summary>The directory the shell starts in; set before the control is loaded. Default: the app directory.</summary>
+    public string? InitialDirectory { get; set; }
+
+    /// <summary>The shell's current directory as a Windows path, if it reports one with OSC 7.</summary>
+    public string? WorkingDirectory => _session?.WorkingDirectory;
+
     /// <summary>Gives this terminal keyboard focus.</summary>
     public void FocusTerminal() => Focus(FocusState.Programmatic);
 
@@ -160,6 +166,7 @@ public sealed partial class TerminalControl : UserControl
         var command = _config.Command is { } text ? CommandLine.Split(text) : null;
         var options = new PtyStartOptions(command?.Application ?? FindShell(), _grid.Columns, _grid.Rows)
         {
+            WorkingDirectory = InitialDirectory is { } start && Directory.Exists(start) ? start : null,
             Arguments = command?.Arguments ?? [],
             Environment = new Dictionary<string, string>
             {
