@@ -32,6 +32,8 @@ public static class ConfigOptions
             "Space in pixels between the window edge and the text grid, on every side. 0 to 200."),
         new("cursor-style-blink", Code(Defaults.CursorBlink ? "true" : "false"), true,
             "`true` or `false`. Whether the cursor blinks."),
+        new("clipboard-paste-protection", Code(Defaults.PasteProtection ? "true" : "false"), true,
+            "`true` or `false`. Ask before pasting text that contains line breaks into a program that has not enabled bracketed paste."),
         new("theme", "none", true,
             "Colour theme by name, for example `catppuccin-mocha` or `Gruvbox Dark`. See [Themes](/wintty/themes/). " +
             "Your own colour options below are layered on top of the theme."),
