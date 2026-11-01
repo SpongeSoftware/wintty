@@ -71,6 +71,14 @@ public class ConfigParserTests
     }
 
     [Fact]
+    public void Parse_PasteProtectionIsOnByDefaultAndCanBeTurnedOff()
+    {
+        Assert.True(new WinttyConfig().PasteProtection);
+        Assert.False(ConfigParser.Parse("clipboard-paste-protection = false").Config.PasteProtection);
+        Assert.Single(ConfigParser.Parse("clipboard-paste-protection = sometimes").Diagnostics);
+    }
+
+    [Fact]
     public void Parse_EmptyValueResetsToTheDefault()
     {
         var config = ConfigParser.Parse(

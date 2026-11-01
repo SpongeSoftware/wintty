@@ -116,6 +116,69 @@ public sealed class TerminalSession : IDisposable
         return true;
     }
 
+    /// <summary>Gets a value indicating whether the program enabled bracketed paste.</summary>
+    public bool BracketedPaste
+    {
+        get
+        {
+            ObjectDisposedException.ThrowIf(_disposed != 0, this);
+            lock (_engineLock)
+            {
+                return Engine.BracketedPaste;
+            }
+        }
+    }
+
+    /// <summary>
+    /// Pastes text into the program: control characters are filtered, line breaks become carriage returns and
+    /// the text is wrapped in bracketed-paste markers when the program enabled them.
+    /// </summary>
+    /// <param name="text">The text to paste.</param>
+    public void Paste(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        if (text.Length == 0)
+        {
+            return;
+        }
+
+        byte[] bytes;
+        lock (_engineLock)
+        {
+            bytes = Engine.EncodePaste(text);
+        }
+
+        SendInput(bytes);
+    }
+
+    /// <summary>Reads the text under a selection, including rows scrolled out of view.</summary>
+    /// <param name="selection">The selected region.</param>
+    /// <returns>The text to copy.</returns>
+    public string GetSelectedText(Selection.TerminalSelection selection)
+    {
+        ArgumentNullException.ThrowIfNull(selection);
+        ObjectDisposedException.ThrowIf(_disposed != 0, this);
+        lock (_engineLock)
+        {
+            // Reading history means moving the view, so put it back afterwards.
+            var original = Engine.CreateSnapshot().Scrollbar.Offset;
+            try
+            {
+                return Selection.SelectionText.Extract(selection, row =>
+                {
+                    var current = Engine.CreateSnapshot().Scrollbar.Offset;
+                    Engine.ScrollViewport((int)(row - current));
+                    return Engine.CreateSnapshot();
+                });
+            }
+            finally
+            {
+                Engine.ScrollViewport((int)(original - Engine.CreateSnapshot().Scrollbar.Offset));
+            }
+        }
+    }
+
     /// <summary>Gets a value indicating whether the program has asked for mouse reports.</summary>
     public bool MouseTracking
     {

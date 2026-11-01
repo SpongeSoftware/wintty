@@ -49,6 +49,17 @@ public interface ITerminalEngine : IDisposable
     /// <summary>Gets a value indicating whether the program has asked for mouse reports.</summary>
     bool MouseTracking { get; }
 
+    /// <summary>Gets a value indicating whether the program asked for pasted text to be wrapped in bracketed-paste markers.</summary>
+    bool BracketedPaste { get; }
+
+    /// <summary>
+    /// Prepares text for pasting: unsafe control characters are removed, line breaks become carriage returns and,
+    /// when the program enabled bracketed paste, the text is wrapped in the paste markers.
+    /// </summary>
+    /// <param name="text">The text to paste.</param>
+    /// <returns>The bytes to send to the program.</returns>
+    byte[] EncodePaste(string text);
+
     /// <summary>Scrolls the visible rows through the history.</summary>
     /// <param name="rows">Rows to move; negative scrolls up towards older output.</param>
     void ScrollViewport(int rows);
