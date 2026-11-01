@@ -114,6 +114,9 @@ public static class ConfigParser
             case "cursor-style-blink":
                 return TryFlag(value, defaults.CursorBlink, key, out var blink, out error)
                     ? config with { CursorBlink = blink } : config;
+            case "clipboard-paste-protection":
+                return TryFlag(value, defaults.PasteProtection, key, out var protection, out error)
+                    ? config with { PasteProtection = protection } : config;
             case "theme":
                 return config with { Theme = value.Length == 0 ? null : value, ThemeLine = value.Length == 0 ? 0 : line };
             case "foreground":

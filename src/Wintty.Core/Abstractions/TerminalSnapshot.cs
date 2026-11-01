@@ -114,6 +114,7 @@ public readonly record struct TerminalCell(
 public sealed class TerminalSnapshot
 {
     private readonly TerminalCell[] _cells;
+    private readonly bool[]? _wrappedRows;
 
     /// <summary>Creates a snapshot.</summary>
     /// <param name="columns">Grid width.</param>
@@ -123,6 +124,10 @@ public sealed class TerminalSnapshot
     /// <param name="defaultForeground">Default text colour.</param>
     /// <param name="defaultBackground">Default background colour.</param>
     /// <param name="scrollbar">Where the visible rows sit within the history.</param>
+    /// <param name="wrappedRows">
+    /// For each row, whether it continues the line above because that line was too long for the grid;
+    /// <see langword="null"/> when no row does.
+    /// </param>
     /// <exception cref="ArgumentOutOfRangeException">A dimension is not positive.</exception>
     /// <exception cref="ArgumentException">The cell count does not match the dimensions.</exception>
     public TerminalSnapshot(
@@ -132,7 +137,8 @@ public sealed class TerminalSnapshot
         CursorState cursor,
         TerminalColor defaultForeground,
         TerminalColor defaultBackground,
-        ScrollbarState scrollbar = default)
+        ScrollbarState scrollbar = default,
+        bool[]? wrappedRows = null)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(columns, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(rows, 0);
@@ -149,6 +155,17 @@ public sealed class TerminalSnapshot
         DefaultForeground = defaultForeground;
         DefaultBackground = defaultBackground;
         Scrollbar = scrollbar;
+        _wrappedRows = wrappedRows is { Length: > 0 } && wrappedRows.Length == rows ? wrappedRows : null;
+    }
+
+    /// <summary>Tests whether a row continues the line above it (a soft wrap rather than a real line break).</summary>
+    /// <param name="row">Row to test.</param>
+    /// <returns><see langword="true"/> when the row is the continuation of a wrapped line.</returns>
+    public bool IsWrapped(int row)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(row);
+        ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(row, Rows);
+        return _wrappedRows is not null && _wrappedRows[row];
     }
 
     /// <summary>Grid width in cells.</summary>

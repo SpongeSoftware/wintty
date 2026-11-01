@@ -23,3 +23,5 @@ https://github.com/catppuccin) and Gruvbox (MIT, Pavel Pertsev, https://github.c
 
 The Bamboo, Bamboo Multiplex and Bamboo Light schemes are the Ghostty themes shipped with bamboo.nvim
 (MIT License, Copyright (c) 2021 Navarasu and ribru17, https://github.com/ribru17/bamboo.nvim, extras/ghostty).
+
+The wintty logo and icon (assets/logo, src/Wintty.App/Assets, docs favicon) are original artwork for this project, released under the same MIT licence as the code.

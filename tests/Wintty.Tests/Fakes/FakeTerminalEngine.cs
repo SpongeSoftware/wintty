@@ -83,6 +83,17 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
         return EncodedMouse;
     }
 
+    public bool BracketedPaste { get; set; }
+
+    public List<string> Pastes { get; } = [];
+
+    public byte[] EncodePaste(string text)
+    {
+        Pastes.Add(text);
+        var encoded = Encoding.UTF8.GetBytes(text.Replace("\r\n", "\r", StringComparison.Ordinal).Replace('\n', '\r'));
+        return BracketedPaste ? [.. "\u001b[200~"u8, .. encoded, .. "\u001b[201~"u8] : encoded;
+    }
+
     public List<int> Scrolls { get; } = [];
 
     public int ScrolledToBottom { get; private set; }

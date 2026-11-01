@@ -9,6 +9,7 @@ public sealed partial class MainWindow : Window
     {
         InitializeComponent();
         Title = $"wintty {VersionInfo.Current}";
+        AppWindow.SetIcon(Path.Combine(AppContext.BaseDirectory, "Assets", "wintty.ico"));
         Terminal.TitleChanged += (_, title) => Title = title;
         Terminal.ProcessExited += (_, _) => Close();
     }
