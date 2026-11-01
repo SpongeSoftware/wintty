@@ -22,10 +22,10 @@ public static class GridSizer
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(cellHeight, 0);
         ArgumentOutOfRangeException.ThrowIfNegative(padding);
 
-        var usableWidth = Math.Max(0, surfaceWidth - (2 * padding));
-        var usableHeight = Math.Max(0, surfaceHeight - (2 * padding));
-        var columns = (int)Math.Floor(usableWidth / cellWidth);
-        var rows = (int)Math.Floor(usableHeight / cellHeight);
+        double usableWidth = Math.Max(0, surfaceWidth - (2 * padding));
+        double usableHeight = Math.Max(0, surfaceHeight - (2 * padding));
+        int columns = (int)Math.Floor(usableWidth / cellWidth);
+        int rows = (int)Math.Floor(usableHeight / cellHeight);
         return (Math.Max(1, columns), Math.Max(1, rows));
     }
 }

@@ -29,8 +29,8 @@ public static class CellHitTester
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(columns, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(rows, 0);
 
-        var column = (int)Math.Floor((x - padding) / cellWidth);
-        var row = (int)Math.Floor((y - padding) / cellHeight);
+        int column = (int)Math.Floor((x - padding) / cellWidth);
+        int row = (int)Math.Floor((y - padding) / cellHeight);
         return (Math.Clamp(column, 0, columns - 1), Math.Clamp(row, 0, rows - 1));
     }
 

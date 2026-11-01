@@ -101,8 +101,8 @@ public static class PaneLayout
     // Returns the same node when nothing below it changed, so callers can tell nothing happened.
     private static PaneNode SplitChildren(PaneSplit split, PaneId target, SplitDirection direction, PaneId created)
     {
-        var first = Split(split.First, target, direction, created);
-        var second = Split(split.Second, target, direction, created);
+        PaneNode first = Split(split.First, target, direction, created);
+        PaneNode second = Split(split.Second, target, direction, created);
         return ReferenceEquals(first, split.First) && ReferenceEquals(second, split.Second)
             ? split
             : split with { First = first, Second = second };
@@ -120,8 +120,8 @@ public static class PaneLayout
             case PaneLeaf leaf:
                 return leaf.Id == target ? null : root;
             case PaneSplit split:
-                var first = Close(split.First, target);
-                var second = Close(split.Second, target);
+                PaneNode? first = Close(split.First, target);
+                PaneNode? second = Close(split.Second, target);
                 if (first is null)
                 {
                     return second;
@@ -145,8 +145,8 @@ public static class PaneLayout
     public static PaneNode Resize(PaneNode root, PaneId target, FocusDirection direction, double amount)
     {
         ArgumentNullException.ThrowIfNull(root);
-        var wanted = direction is FocusDirection.Left or FocusDirection.Right ? SplitDirection.Right : SplitDirection.Down;
-        var sign = direction is FocusDirection.Right or FocusDirection.Down ? 1 : -1;
+        SplitDirection wanted = direction is FocusDirection.Left or FocusDirection.Right ? SplitDirection.Right : SplitDirection.Down;
+        int sign = direction is FocusDirection.Right or FocusDirection.Down ? 1 : -1;
         return ResizeIn(root, target, wanted, sign * amount) ?? root;
     }
 
@@ -170,8 +170,8 @@ public static class PaneLayout
         }
 
         // Prefer the innermost matching divider around the target.
-        var inFirst = Leaves(split.First).Contains(target);
-        var inner = ResizeIn(inFirst ? split.First : split.Second, target, wanted, delta);
+        bool inFirst = Leaves(split.First).Contains(target);
+        PaneNode? inner = ResizeIn(inFirst ? split.First : split.Second, target, wanted, delta);
         if (inner is not null)
         {
             return inFirst ? split with { First = inner } : split with { Second = inner };
@@ -208,22 +208,22 @@ public static class PaneLayout
     /// </returns>
     public static PaneId? Neighbour(PaneNode root, PaneRect bounds, PaneId from, FocusDirection direction)
     {
-        var rects = Arrange(root, bounds);
-        if (!rects.TryGetValue(from, out var origin))
+        IReadOnlyDictionary<PaneId, PaneRect> rects = Arrange(root, bounds);
+        if (!rects.TryGetValue(from, out PaneRect origin))
         {
             return null;
         }
 
         PaneId? best = null;
-        var bestGap = double.MaxValue;
-        foreach (var (id, rect) in rects)
+        double bestGap = double.MaxValue;
+        foreach ((PaneId id, PaneRect rect) in rects)
         {
             if (id == from || !IsBeyond(origin, rect, direction) || !Overlaps(origin, rect, direction))
             {
                 continue;
             }
 
-            var gap = Gap(origin, rect, direction);
+            double gap = Gap(origin, rect, direction);
             if (gap < bestGap)
             {
                 bestGap = gap;
@@ -242,12 +242,12 @@ public static class PaneLayout
                 output[leaf.Id] = area;
                 break;
             case PaneSplit split when split.Direction == SplitDirection.Right:
-                var width = area.Width * split.Ratio;
+                double width = area.Width * split.Ratio;
                 Place(split.First, area with { Width = width }, output);
                 Place(split.Second, new PaneRect(area.X + width, area.Y, area.Width - width, area.Height), output);
                 break;
             case PaneSplit split:
-                var height = area.Height * split.Ratio;
+                double height = area.Height * split.Ratio;
                 Place(split.First, area with { Height = height }, output);
                 Place(split.Second, new PaneRect(area.X, area.Y + height, area.Width, area.Height - height), output);
                 break;

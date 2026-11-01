@@ -61,7 +61,7 @@ public sealed class VtEventScanner
     /// <param name="data">The bytes, in order.</param>
     public void Feed(ReadOnlySpan<byte> data)
     {
-        foreach (var value in data)
+        foreach (byte value in data)
         {
             Step(value);
         }
@@ -210,8 +210,8 @@ public sealed class VtEventScanner
     private void FinishApc()
     {
         _state = State.Ground;
-        var bytes = _buffer.ToArray();
-        var overflowed = _overflowed;
+        byte[] bytes = _buffer.ToArray();
+        bool overflowed = _overflowed;
         ResetBuffer();
         if (!overflowed && _onApc is not null)
         {
@@ -222,22 +222,22 @@ public sealed class VtEventScanner
     private void FinishOsc()
     {
         _state = State.Ground;
-        var bytes = _buffer.ToArray();
-        var overflowed = _overflowed;
+        byte[] bytes = _buffer.ToArray();
+        bool overflowed = _overflowed;
         ResetBuffer();
         if (overflowed)
         {
             return;
         }
 
-        var separator = Array.IndexOf(bytes, (byte)';');
-        var numberBytes = separator < 0 ? bytes : bytes[..separator];
-        if (!int.TryParse(Encoding.ASCII.GetString(numberBytes), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out var command))
+        int separator = Array.IndexOf(bytes, (byte)';');
+        byte[] numberBytes = separator < 0 ? bytes : bytes[..separator];
+        if (!int.TryParse(Encoding.ASCII.GetString(numberBytes), System.Globalization.NumberStyles.None, System.Globalization.CultureInfo.InvariantCulture, out int command))
         {
             return;
         }
 
-        var payload = separator < 0 ? string.Empty : Encoding.UTF8.GetString(bytes, separator + 1, bytes.Length - separator - 1);
+        string payload = separator < 0 ? string.Empty : Encoding.UTF8.GetString(bytes, separator + 1, bytes.Length - separator - 1);
         _onOsc(new OscSequence(command, payload));
     }
 

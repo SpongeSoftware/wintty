@@ -22,7 +22,7 @@ internal static class NativeAssetLocator
             return null;
         }
 
-        var candidate = Path.Combine(baseDirectory, "runtimes", RuntimeIdentifier(architecture), "native");
+        string candidate = Path.Combine(baseDirectory, "runtimes", RuntimeIdentifier(architecture), "native");
         if (!Directory.Exists(candidate))
         {
             return null;

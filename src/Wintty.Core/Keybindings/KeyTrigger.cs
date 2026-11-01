@@ -29,12 +29,12 @@ public readonly record struct KeyTrigger(TerminalKey Key, KeyModifiers Modifiers
         ArgumentNullException.ThrowIfNull(text);
         trigger = default;
         error = null;
-        var modifiers = KeyModifiers.None;
+        KeyModifiers modifiers = KeyModifiers.None;
         TerminalKey? key = null;
-        foreach (var rawPart in text.Split('+'))
+        foreach (string rawPart in text.Split('+'))
         {
-            var part = rawPart.Trim().ToLowerInvariant();
-            var modifier = ModifierFor(part);
+            string part = rawPart.Trim().ToLowerInvariant();
+            KeyModifiers modifier = ModifierFor(part);
             if (modifier != KeyModifiers.None)
             {
                 modifiers |= modifier;
@@ -90,7 +90,7 @@ public readonly record struct KeyTrigger(TerminalKey Key, KeyModifiers Modifiers
             builder.Append("super+");
         }
 
-        var key = Key;
+        TerminalKey key = Key;
         return builder.Append(KeyNames.FirstOrDefault(n => n.Key == key).Name ?? key.ToString()).ToString();
     }
 
@@ -105,7 +105,7 @@ public readonly record struct KeyTrigger(TerminalKey Key, KeyModifiers Modifiers
 
     private static TerminalKey? TryKey(string name)
     {
-        foreach (var (candidate, key) in KeyNames)
+        foreach ((string? candidate, TerminalKey key) in KeyNames)
         {
             if (candidate == name)
             {
@@ -129,17 +129,17 @@ public readonly record struct KeyTrigger(TerminalKey Key, KeyModifiers Modifiers
     private static (string, TerminalKey)[] BuildKeyNames()
     {
         var names = new List<(string, TerminalKey)>();
-        for (var letter = 'a'; letter <= 'z'; letter++)
+        for (char letter = 'a'; letter <= 'z'; letter++)
         {
             names.Add((letter.ToString(), Enum.Parse<TerminalKey>(char.ToUpperInvariant(letter).ToString())));
         }
 
-        for (var digit = 0; digit <= 9; digit++)
+        for (int digit = 0; digit <= 9; digit++)
         {
             names.Add((digit.ToString(System.Globalization.CultureInfo.InvariantCulture), Enum.Parse<TerminalKey>("Digit" + digit)));
         }
 
-        for (var number = 1; number <= 24; number++)
+        for (int number = 1; number <= 24; number++)
         {
             names.Add(("f" + number, Enum.Parse<TerminalKey>("F" + number)));
         }

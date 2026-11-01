@@ -22,7 +22,7 @@ public static class RenderPlanner
         var texts = new List<TextRun>();
         var decorations = new List<DecorationRun>();
 
-        for (var row = 0; row < snapshot.Rows; row++)
+        for (int row = 0; row < snapshot.Rows; row++)
         {
             AddBackgrounds(snapshot, row, backgrounds);
             AddTexts(snapshot, row, texts);
@@ -50,8 +50,8 @@ public static class RenderPlanner
             return runs;
         }
 
-        var offset = snapshot.Scrollbar.Offset;
-        for (var row = 0; row < snapshot.Rows; row++)
+        long offset = snapshot.Scrollbar.Offset;
+        for (int row = 0; row < snapshot.Rows; row++)
         {
             if (selection.SpanOnRow(offset + row, snapshot.Columns) is not var (start, end))
             {
@@ -80,18 +80,18 @@ public static class RenderPlanner
             return null;
         }
 
-        var height = Math.Max(MinimumThumbHeight, (double)scrollbar.Length / scrollbar.Total);
-        var top = Math.Min((double)scrollbar.Offset / scrollbar.Total, 1 - height);
+        double height = Math.Max(MinimumThumbHeight, (double)scrollbar.Length / scrollbar.Total);
+        double top = Math.Min((double)scrollbar.Offset / scrollbar.Total, 1 - height);
         return new ScrollThumb(top, height);
     }
 
     private static void AddBackgrounds(TerminalSnapshot snapshot, int row, List<BackgroundRun> output)
     {
-        var start = -1;
+        int start = -1;
         var color = default(TerminalColor);
-        for (var column = 0; column <= snapshot.Columns; column++)
+        for (int column = 0; column <= snapshot.Columns; column++)
         {
-            var hasFill = false;
+            bool hasFill = false;
             var next = default(TerminalColor);
             if (column < snapshot.Columns)
             {
@@ -116,8 +116,8 @@ public static class RenderPlanner
     private static void AddTexts(TerminalSnapshot snapshot, int row, List<TextRun> output)
     {
         var builder = new System.Text.StringBuilder();
-        var runStart = -1;
-        var runCells = 0;
+        int runStart = -1;
+        int runCells = 0;
         TerminalCell? runStyle = null;
 
         void Flush()
@@ -142,15 +142,15 @@ public static class RenderPlanner
             runStyle = null;
         }
 
-        for (var column = 0; column < snapshot.Columns; column++)
+        for (int column = 0; column < snapshot.Columns; column++)
         {
-            var cell = snapshot[column, row];
+            TerminalCell cell = snapshot[column, row];
             if (cell.Width == 0)
             {
                 continue;
             }
 
-            var drawable = cell.Text.Length > 0 && !cell.Attributes.HasFlag(CellAttributes.Invisible);
+            bool drawable = cell.Text.Length > 0 && !cell.Attributes.HasFlag(CellAttributes.Invisible);
             if (!drawable)
             {
                 Flush();
@@ -196,15 +196,15 @@ public static class RenderPlanner
 
     private static void AddDecorations(TerminalSnapshot snapshot, int row, List<DecorationRun> output)
     {
-        for (var column = 0; column < snapshot.Columns; column++)
+        for (int column = 0; column < snapshot.Columns; column++)
         {
-            var cell = snapshot[column, row];
+            TerminalCell cell = snapshot[column, row];
             if (cell.Width == 0)
             {
                 continue;
             }
 
-            var color = cell.EffectiveForeground;
+            TerminalColor color = cell.EffectiveForeground;
             if (cell.Underline != UnderlineStyle.None)
             {
                 Add(output, row, column, cell.Width, ToKind(cell.Underline), cell.UnderlineColor ?? color);
@@ -227,7 +227,7 @@ public static class RenderPlanner
         // Extend the previous run when it ends exactly here with the same look.
         if (output.Count > 0)
         {
-            var last = output[^1];
+            DecorationRun last = output[^1];
             if (last.Row == row && last.Kind == kind && last.Color == color && last.Column + last.Length == column)
             {
                 output[^1] = last with { Length = last.Length + length };
@@ -249,7 +249,7 @@ public static class RenderPlanner
 
     private static CursorShape? BuildCursor(TerminalSnapshot snapshot, bool cursorVisible)
     {
-        var cursor = snapshot.Cursor;
+        CursorState cursor = snapshot.Cursor;
         if (!cursorVisible || !cursor.Visible
             || cursor.Column < 0 || cursor.Column >= snapshot.Columns
             || cursor.Row < 0 || cursor.Row >= snapshot.Rows)
@@ -257,7 +257,7 @@ public static class RenderPlanner
             return null;
         }
 
-        var cell = snapshot[cursor.Column, cursor.Row];
+        TerminalCell cell = snapshot[cursor.Column, cursor.Row];
         return new CursorShape(cursor.Row, cursor.Column, cell.Width == 2 ? 2 : 1, cursor.Style, cursor.Color ?? snapshot.DefaultForeground);
     }
 }

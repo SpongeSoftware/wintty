@@ -30,9 +30,9 @@ public sealed partial class MainWindow : Window
     private void AddTab()
     {
         // A new tab starts where the pane you were in is, when its shell reports a directory.
-        var startIn = _model.Selected is { } current && _terminals.TryGetValue(current.Focused, out var source) ? source.WorkingDirectory : null;
-        var tab = _model.AddTab();
-        var terminal = CreateTerminal(tab.Focused, startIn);
+        string? startIn = _model.Selected is { } current && _terminals.TryGetValue(current.Focused, out global::Wintty.App.TerminalControl? source) ? source.WorkingDirectory : null;
+        Tab tab = _model.AddTab();
+        TerminalControl terminal = CreateTerminal(tab.Focused, startIn);
         var host = new Grid();
         _hosts[tab.Id] = host;
         var item = new TabViewItem { Tag = tab.Id, Header = tab.Title, Content = host };
@@ -163,14 +163,14 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        CreateTerminal(created, _terminals.TryGetValue(pane, out var source) ? source.WorkingDirectory : null);
+        CreateTerminal(created, _terminals.TryGetValue(pane, out TerminalControl? source) ? source.WorkingDirectory : null);
         Rebuild(tab);
         FocusPane(created);
     }
 
     private void GotoSplit(FocusDirection direction)
     {
-        if (_model.Selected is not { } tab || !_hosts.TryGetValue(tab.Id, out var host))
+        if (_model.Selected is not { } tab || !_hosts.TryGetValue(tab.Id, out Grid? host))
         {
             return;
         }
@@ -188,7 +188,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var tabClosed = _model.ClosePane(pane);
+        bool tabClosed = _model.ClosePane(pane);
         DisposeTerminal(pane);
         if (tabClosed)
         {
@@ -209,7 +209,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        foreach (var pane in _model.CloseTab(tabId))
+        foreach (PaneId pane in _model.CloseTab(tabId))
         {
             DisposeTerminal(pane);
         }
@@ -232,7 +232,7 @@ public sealed partial class MainWindow : Window
     private void RemoveTabItem(int tabId)
     {
         _hosts.Remove(tabId);
-        var item = Tabs.TabItems.OfType<TabViewItem>().FirstOrDefault(i => i.Tag is int id && id == tabId);
+        TabViewItem? item = Tabs.TabItems.OfType<TabViewItem>().FirstOrDefault(i => i.Tag is int id && id == tabId);
         if (item is not null)
         {
             _syncing = true;
@@ -250,7 +250,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var index = _model.Tabs.ToList().FindIndex(t => t.Id == tabId);
+        int index = _model.Tabs.ToList().FindIndex(t => t.Id == tabId);
         _model.Select(index);
         if (_model.Selected is { } tab)
         {
@@ -274,9 +274,9 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        for (var target = 0; target < order.Count; target++)
+        for (int target = 0; target < order.Count; target++)
         {
-            var current = _model.Tabs.ToList().FindIndex(t => t.Id == order[target]);
+            int current = _model.Tabs.ToList().FindIndex(t => t.Id == order[target]);
             if (current >= 0 && current != target)
             {
                 _model.Move(current, target);
@@ -291,7 +291,7 @@ public sealed partial class MainWindow : Window
             return;
         }
 
-        var item = Tabs.TabItems.OfType<TabViewItem>().FirstOrDefault(i => i.Tag is int id && id == tab.Id);
+        TabViewItem? item = Tabs.TabItems.OfType<TabViewItem>().FirstOrDefault(i => i.Tag is int id && id == tab.Id);
         if (item is not null && !ReferenceEquals(Tabs.SelectedItem, item))
         {
             _syncing = true;
@@ -305,7 +305,7 @@ public sealed partial class MainWindow : Window
 
     private void FocusPane(PaneId pane)
     {
-        if (_terminals.TryGetValue(pane, out var terminal))
+        if (_terminals.TryGetValue(pane, out TerminalControl? terminal))
         {
             _model.Focus(pane);
             terminal.FocusTerminal();
@@ -314,7 +314,7 @@ public sealed partial class MainWindow : Window
 
     private void UpdateTitles()
     {
-        foreach (var item in Tabs.TabItems.OfType<TabViewItem>())
+        foreach (TabViewItem item in Tabs.TabItems.OfType<TabViewItem>())
         {
             if (item.Tag is int id && _model.Tabs.FirstOrDefault(t => t.Id == id) is { } tab)
             {
@@ -332,12 +332,12 @@ public sealed partial class MainWindow : Window
     // hidden by zoom or moved by a split is never restarted.
     private void Rebuild(Tab tab)
     {
-        if (!_hosts.TryGetValue(tab.Id, out var host))
+        if (!_hosts.TryGetValue(tab.Id, out Grid? host))
         {
             return;
         }
 
-        foreach (var pane in PaneLayout.Leaves(tab.Root))
+        foreach (PaneId pane in PaneLayout.Leaves(tab.Root))
         {
             if (_terminals[pane].Parent is Panel parent)
             {
@@ -358,8 +358,8 @@ public sealed partial class MainWindow : Window
 
         var split = (PaneSplit)node;
         var grid = new Grid();
-        var first = Build(split.First);
-        var second = Build(split.Second);
+        UIElement first = Build(split.First);
+        UIElement second = Build(split.Second);
         var divider = new Border { Background = new Microsoft.UI.Xaml.Media.SolidColorBrush(Windows.UI.Color.FromArgb(255, 70, 70, 70)) };
         if (split.Direction == SplitDirection.Right)
         {
@@ -409,7 +409,7 @@ public sealed partial class MainWindow : Window
 
     private void DisposeTerminal(PaneId pane)
     {
-        if (_terminals.Remove(pane, out var terminal))
+        if (_terminals.Remove(pane, out TerminalControl? terminal))
         {
             if (terminal.Parent is Panel parent)
             {
@@ -423,7 +423,7 @@ public sealed partial class MainWindow : Window
     private void DisposeAll()
     {
         _closing = true;
-        foreach (var terminal in _terminals.Values)
+        foreach (TerminalControl terminal in _terminals.Values)
         {
             terminal.Close();
         }

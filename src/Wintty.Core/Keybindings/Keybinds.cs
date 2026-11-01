@@ -93,7 +93,7 @@ public static class Keybinds
     public static bool TryParseAction(string name, out TerminalAction action)
     {
         ArgumentNullException.ThrowIfNull(name);
-        foreach (var info in Actions)
+        foreach (ActionInfo info in Actions)
         {
             if (string.Equals(info.Name, name.Trim(), StringComparison.OrdinalIgnoreCase))
             {
@@ -121,20 +121,20 @@ public static class Keybinds
     {
         ArgumentNullException.ThrowIfNull(value);
         entry = null;
-        var separator = value.LastIndexOf('=');
+        int separator = value.LastIndexOf('=');
         if (separator <= 0 || separator == value.Length - 1)
         {
             error = "expected keybind = trigger=action";
             return false;
         }
 
-        if (!KeyTrigger.TryParse(value[..separator], out var trigger, out error))
+        if (!KeyTrigger.TryParse(value[..separator], out KeyTrigger trigger, out error))
         {
             return false;
         }
 
-        var actionName = value[(separator + 1)..].Trim();
-        if (!TryParseAction(actionName, out var action))
+        string actionName = value[(separator + 1)..].Trim();
+        if (!TryParseAction(actionName, out TerminalAction action))
         {
             error = $"unknown action '{actionName}'";
             return false;
@@ -160,16 +160,16 @@ public static class Keybinds
         var map = new Dictionary<KeyTrigger, TerminalAction>();
         if (!clearDefaults)
         {
-            foreach (var (trigger, action) in Defaults)
+            foreach ((KeyTrigger trigger, TerminalAction action) in Defaults)
             {
                 map[trigger] = action;
             }
         }
 
         var fromUser = new Dictionary<KeyTrigger, KeybindEntry>();
-        foreach (var entry in user)
+        foreach (KeybindEntry entry in user)
         {
-            if (fromUser.TryGetValue(entry.Trigger, out var earlier) && earlier.Action != entry.Action)
+            if (fromUser.TryGetValue(entry.Trigger, out KeybindEntry? earlier) && earlier.Action != entry.Action)
             {
                 diagnostics.Add(new ConfigDiagnostic(
                     entry.Line, $"{entry.Trigger} is already bound on line {earlier.Line}; this line replaces it"));
@@ -195,7 +195,7 @@ public static class Keybinds
     {
         var builder = new StringBuilder();
         builder.Append("| Action | Default keys | Description |\n| --- | --- | --- |\n");
-        foreach (var info in Actions)
+        foreach (ActionInfo info in Actions)
         {
             var keys = Defaults.Where(d => d.Action == info.Action).Select(d => "`" + d.Trigger + "`").ToList();
             builder.Append(System.Globalization.CultureInfo.InvariantCulture,
@@ -206,5 +206,5 @@ public static class Keybinds
     }
 
     private static KeyTrigger Trigger(string text) =>
-        KeyTrigger.TryParse(text, out var trigger, out _) ? trigger : throw new InvalidOperationException("Bad default binding " + text);
+        KeyTrigger.TryParse(text, out KeyTrigger trigger, out _) ? trigger : throw new InvalidOperationException("Bad default binding " + text);
 }

@@ -35,7 +35,7 @@ public static class GlyphClassifier
             return FontRole.Primary;
         }
 
-        var first = text.EnumerateRunes().First().Value;
+        int first = text.EnumerateRunes().First().Value;
         return IsPrivateUse(first) ? FontRole.Symbols : FontRole.Primary;
     }
 }

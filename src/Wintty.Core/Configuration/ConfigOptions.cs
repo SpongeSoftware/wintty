@@ -61,7 +61,7 @@ public static class ConfigOptions
     {
         var builder = new StringBuilder();
         builder.Append("| Option | Default | Applies | Description |\n| --- | --- | --- | --- |\n");
-        foreach (var option in All)
+        foreach (ConfigOption option in All)
         {
             builder.Append(CultureInfo.InvariantCulture, $"| `{option.Name}` | {option.Default} | {(option.Live ? "live" : "new terminals")} | {option.Description} |\n");
         }

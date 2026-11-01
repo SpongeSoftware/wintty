@@ -17,9 +17,9 @@ public static class CommandLine
 
         var words = new List<string>();
         var word = new StringBuilder();
-        var quoted = false;
-        var started = false;
-        foreach (var c in command)
+        bool quoted = false;
+        bool started = false;
+        foreach (char c in command)
         {
             if (c == '"')
             {

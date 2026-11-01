@@ -18,8 +18,8 @@ public static class ConfigParser
     public static ConfigLoadResult Parse(string text)
     {
         ArgumentNullException.ThrowIfNull(text);
-        var (config, diagnostics) = Run(text, lenient: false);
-        var bindings = Keybinds.Resolve(config.Keybinds, config.ClearDefaultKeybinds, diagnostics);
+        (WinttyConfig? config, List<ConfigDiagnostic>? diagnostics) = Run(text, lenient: false);
+        IReadOnlyDictionary<KeyTrigger, TerminalAction> bindings = Keybinds.Resolve(config.Keybinds, config.ClearDefaultKeybinds, diagnostics);
         diagnostics.Sort((a, b) => a.Line.CompareTo(b.Line));
         return new ConfigLoadResult(config, diagnostics) { Colors = config.ExplicitColors, Bindings = bindings };
     }
@@ -42,26 +42,26 @@ public static class ConfigParser
 
         var config = new WinttyConfig();
         var diagnostics = new List<ConfigDiagnostic>();
-        var lines = text.Split('\n');
-        for (var index = 0; index < lines.Length; index++)
+        string[] lines = text.Split('\n');
+        for (int index = 0; index < lines.Length; index++)
         {
-            var number = index + 1;
-            var line = lines[index].Trim();
+            int number = index + 1;
+            string line = lines[index].Trim();
             if (line.Length == 0 || line[0] == '#')
             {
                 continue;
             }
 
-            var equals = line.IndexOf('=');
+            int equals = line.IndexOf('=');
             if (equals <= 0)
             {
                 diagnostics.Add(new ConfigDiagnostic(number, $"expected 'key = value' but found '{line}'"));
                 continue;
             }
 
-            var key = line[..equals].Trim().ToLowerInvariant();
-            var value = Unquote(line[(equals + 1)..].Trim());
-            config = Apply(config, key, value, number, out var error);
+            string key = line[..equals].Trim().ToLowerInvariant();
+            string value = Unquote(line[(equals + 1)..].Trim());
+            config = Apply(config, key, value, number, out string? error);
             if (error is not null && !lenient)
             {
                 diagnostics.Add(new ConfigDiagnostic(number, error));
@@ -78,13 +78,13 @@ public static class ConfigParser
     public static bool TryParseColor(string text, out TerminalColor color)
     {
         color = default;
-        var hex = text.StartsWith('#') ? text[1..] : text;
+        string hex = text.StartsWith('#') ? text[1..] : text;
         if (hex.Length == 3)
         {
             hex = string.Concat(hex.Select(c => new string(c, 2)));
         }
 
-        if (hex.Length != 6 || !int.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out var rgb))
+        if (hex.Length != 6 || !int.TryParse(hex, NumberStyles.AllowHexSpecifier, CultureInfo.InvariantCulture, out int rgb))
         {
             return false;
         }
@@ -107,7 +107,7 @@ public static class ConfigParser
             return config with { Keybinds = WinttyConfig.NoKeybinds, ClearDefaultKeybinds = true };
         }
 
-        if (!Keybinds.TryParseEntry(value, line, out var entry, out error))
+        if (!Keybinds.TryParseEntry(value, line, out KeybindEntry? entry, out error))
         {
             return config;
         }
@@ -128,32 +128,32 @@ public static class ConfigParser
             case "font-family":
                 return config with { FontFamily = value.Length == 0 ? defaults.FontFamily : value };
             case "font-size":
-                return TryNumber(value, defaults.FontSize, 4f, 200f, key, out var size, out error)
+                return TryNumber(value, defaults.FontSize, 4f, 200f, key, out float size, out error)
                     ? config with { FontSize = size } : config;
             case "window-padding":
-                return TryNumber(value, (float)defaults.WindowPadding, 0f, 200f, key, out var padding, out error)
+                return TryNumber(value, (float)defaults.WindowPadding, 0f, 200f, key, out float padding, out error)
                     ? config with { WindowPadding = padding } : config;
             case "scrollback-limit":
-                return TryWhole(value, defaults.ScrollbackLimit, key, out var scrollback, out error)
+                return TryWhole(value, defaults.ScrollbackLimit, key, out int scrollback, out error)
                     ? config with { ScrollbackLimit = scrollback } : config;
             case "cursor-style-blink":
-                return TryFlag(value, defaults.CursorBlink, key, out var blink, out error)
+                return TryFlag(value, defaults.CursorBlink, key, out bool blink, out error)
                     ? config with { CursorBlink = blink } : config;
             case "clipboard-paste-protection":
-                return TryFlag(value, defaults.PasteProtection, key, out var protection, out error)
+                return TryFlag(value, defaults.PasteProtection, key, out bool protection, out error)
                     ? config with { PasteProtection = protection } : config;
             case "keybind":
                 return ApplyKeybind(config, value, line, out error);
             case "theme":
                 return config with { Theme = value.Length == 0 ? null : value, ThemeLine = value.Length == 0 ? 0 : line };
             case "foreground":
-                return TryColour(value, key, out var foreground, out error) ? config with { Foreground = foreground } : config;
+                return TryColour(value, key, out TerminalColor? foreground, out error) ? config with { Foreground = foreground } : config;
             case "background":
-                return TryColour(value, key, out var background, out error) ? config with { Background = background } : config;
+                return TryColour(value, key, out TerminalColor? background, out error) ? config with { Background = background } : config;
             case "cursor-color":
-                return TryColour(value, key, out var cursor, out error) ? config with { CursorColor = cursor } : config;
+                return TryColour(value, key, out TerminalColor? cursor, out error) ? config with { CursorColor = cursor } : config;
             case "palette":
-                return TryPalette(config.Palette, value, out var palette, out error) ? config with { Palette = palette } : config;
+                return TryPalette(config.Palette, value, out IReadOnlyDictionary<int, TerminalColor>? palette, out error) ? config with { Palette = palette } : config;
             case "command":
                 return config with { Command = value.Length == 0 ? null : value };
             default:
@@ -171,7 +171,7 @@ public static class ConfigParser
             return true;
         }
 
-        if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out var number)
+        if (float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out float number)
             && !float.IsNaN(number) && number >= min && number <= max)
         {
             result = number;
@@ -191,7 +191,7 @@ public static class ConfigParser
             return true;
         }
 
-        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out var number))
+        if (int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out int number))
         {
             result = number;
             return true;
@@ -210,7 +210,7 @@ public static class ConfigParser
             return true;
         }
 
-        if (TryParseColor(value, out var color))
+        if (TryParseColor(value, out TerminalColor color))
         {
             result = color;
             return true;
@@ -231,11 +231,11 @@ public static class ConfigParser
             return true;
         }
 
-        var separator = value.IndexOf('=');
+        int separator = value.IndexOf('=');
         if (separator > 0
-            && int.TryParse(value[..separator].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out var index)
+            && int.TryParse(value[..separator].Trim(), NumberStyles.None, CultureInfo.InvariantCulture, out int index)
             && index < TerminalColorScheme.PaletteSize
-            && TryParseColor(value[(separator + 1)..].Trim(), out var color))
+            && TryParseColor(value[(separator + 1)..].Trim(), out TerminalColor color))
         {
             result = new Dictionary<int, TerminalColor>(current) { [index] = color };
             return true;

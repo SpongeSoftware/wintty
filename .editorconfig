@@ -1,0 +1,20 @@
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+insert_final_newline = true
+indent_style = space
+
+[*.cs]
+indent_size = 4
+
+# Spell out the type unless it is obvious from the right-hand side (new Foo(), a cast).
+csharp_style_var_for_built_in_types = false:warning
+csharp_style_var_when_type_is_apparent = true:suggestion
+csharp_style_var_elsewhere = false:warning
+
+# Tests read better with var.
+[tests/**.cs]
+csharp_style_var_for_built_in_types = true:silent
+csharp_style_var_elsewhere = true:silent
