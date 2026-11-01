@@ -49,6 +49,9 @@ public sealed record WinttyConfig
     /// <summary>Whether the cursor blinks. Applied live.</summary>
     public bool CursorBlink { get; init; } = true;
 
+    /// <summary>Whether pasting text with line breaks asks for confirmation first. Applied live.</summary>
+    public bool PasteProtection { get; init; } = true;
+
     /// <summary>Maximum scrollback lines. Applies to new terminals.</summary>
     public int ScrollbackLimit { get; init; } = DefaultScrollbackLimit;
 

@@ -80,6 +80,7 @@ public readonly record struct CursorShape(int Row, int Column, int CellCount, Cu
 /// <param name="Decorations">Underlines, strikethroughs and overlines.</param>
 /// <param name="Cursor">The cursor to draw, or <see langword="null"/> when hidden.</param>
 /// <param name="ScrollThumb">The scroll position indicator, or <see langword="null"/> when the view is at the bottom.</param>
+/// <param name="Selection">Stretches of selected cells to highlight; empty when nothing visible is selected.</param>
 public sealed record RenderPlan(
     int Columns,
     int Rows,
@@ -88,7 +89,14 @@ public sealed record RenderPlan(
     IReadOnlyList<TextRun> Texts,
     IReadOnlyList<DecorationRun> Decorations,
     CursorShape? Cursor,
-    ScrollThumb? ScrollThumb = null);
+    ScrollThumb? ScrollThumb = null,
+    IReadOnlyList<SelectionRun>? Selection = null);
+
+/// <summary>A stretch of selected cells on one visible row.</summary>
+/// <param name="Row">Row within the visible grid.</param>
+/// <param name="Column">First selected column.</param>
+/// <param name="Length">Number of selected cells.</param>
+public readonly record struct SelectionRun(int Row, int Column, int Length);
 
 /// <summary>
 /// A scroll position indicator, as fractions of the grid height so the drawing layer can place it at any scale.

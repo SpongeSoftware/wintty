@@ -38,6 +38,7 @@ command = pwsh.exe -NoLogo
 | `font-size` | `15` | live | Size in device-independent pixels, from 4 to 200. Fractions are allowed. |
 | `window-padding` | `6` | live | Space in pixels between the window edge and the text grid, on every side. 0 to 200. |
 | `cursor-style-blink` | `true` | live | `true` or `false`. Whether the cursor blinks. |
+| `clipboard-paste-protection` | `true` | live | `true` or `false`. Ask before pasting text that contains line breaks into a program that has not enabled bracketed paste. |
 | `theme` | none | live | Colour theme by name, for example `catppuccin-mocha` or `Gruvbox Dark`. See [Themes](/wintty/themes/). Your own colour options below are layered on top of the theme. |
 | `foreground` | theme or built-in | live | Default text colour as `#rrggbb` (or `#rgb`). |
 | `background` | theme or built-in | live | Default background colour. |
