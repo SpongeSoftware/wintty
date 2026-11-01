@@ -48,10 +48,12 @@ public sealed partial class TerminalControl : UserControl
     private char _pendingHighSurrogate;
     private string? _startupError;
     private MouseButton _heldButton;
+    private ResizeDebouncer? _resizer;
     private double _wheelRemainder;
 
     private const int WheelRowsPerNotch = 3;
     private const double WheelNotch = 120.0;
+    private const int ResizeDelayMilliseconds = 40;
 
     /// <summary>Creates the control.</summary>
     public TerminalControl()
@@ -134,6 +136,17 @@ public sealed partial class TerminalControl : UserControl
         _session = await TerminalSession.StartAsync(_gateway, _gateway, options, _config.ScrollbackLimit);
         ApplyCellPixelSize();
         var dispatcher = DispatcherQueue;
+
+        // Dragging a window edge produces many sizes; apply only the one the drag settles on.
+        var session = _session;
+        _resizer = new ResizeDebouncer(
+            TimeSpan.FromMilliseconds(ResizeDelayMilliseconds),
+            (columns, rows) =>
+            {
+                session.Resize(columns, rows);
+                dispatcher.TryEnqueue(() => Canvas.Invalidate());
+            },
+            ex => LogError("Resize failed: " + ex));
         _configWatcher = new ConfigWatcher(
             ConfigLoader.DefaultPath,
             TimeSpan.FromMilliseconds(250),
@@ -174,7 +187,7 @@ public sealed partial class TerminalControl : UserControl
         if (grid != _grid)
         {
             _grid = grid;
-            _session?.Resize(grid.Columns, grid.Rows);
+            _resizer?.ApplyNow(grid.Columns, grid.Rows);
         }
 
         ApplyCellPixelSize();
@@ -208,6 +221,8 @@ public sealed partial class TerminalControl : UserControl
     {
         _configWatcher?.Dispose();
         _configWatcher = null;
+        _resizer?.Dispose();
+        _resizer = null;
         _blinkTimer.Stop();
         _session?.Dispose();
         _session = null;
@@ -275,7 +290,7 @@ public sealed partial class TerminalControl : UserControl
         }
 
         _grid = grid;
-        _session?.Resize(grid.Columns, grid.Rows);
+        _resizer?.Request(grid.Columns, grid.Rows);
         ApplyCellPixelSize();
         Canvas.Invalidate();
     }
