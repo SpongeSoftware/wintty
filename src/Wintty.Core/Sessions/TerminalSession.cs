@@ -25,7 +25,7 @@ public sealed class TerminalSession : IDisposable
         Engine = engine;
         _pty = pty;
         _syncTimer = new Timer(_ => Updated?.Invoke(this, EventArgs.Empty), null, Timeout.Infinite, Timeout.Infinite);
-        _scanner = new VtEventScanner(OnOsc, () => BellRang?.Invoke(this, EventArgs.Empty));
+        _scanner = new VtEventScanner(OnOsc, () => BellRang?.Invoke(this, EventArgs.Empty), OnApc);
         engine.ResponseHandler = OnEngineResponse;
         _pty.Exited += OnPtyExited;
         _pump = Task.Run(() => PumpAsync(_cts.Token));
@@ -261,6 +261,14 @@ public sealed class TerminalSession : IDisposable
             {
                 return Engine.MouseTracking;
             }
+        }
+    }
+
+    private void OnApc(string content)
+    {
+        if (KittyGraphicsCommand.Parse(content) is { } command)
+        {
+            TerminalEventRaised?.Invoke(this, new GraphicsCommandReceived(command));
         }
     }
 
