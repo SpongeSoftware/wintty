@@ -1,3 +1,10 @@
+<p align="center">
+  <picture>
+    <source media="(prefers-color-scheme: dark)" srcset="assets/logo/wintty-logo-dark.svg">
+    <img alt="wintty" src="assets/logo/wintty-logo-light.svg" width="360">
+  </picture>
+</p>
+
 # wintty
 
 A native Windows terminal emulator built on [libghostty-vt](https://github.com/ghostty-org/ghostty), the terminal core extracted from Ghostty. Written in C# with WinUI 3.
