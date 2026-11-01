@@ -149,7 +149,9 @@ public class TerminalSessionModesTests
 
             engine.SynchronizedOutput = true;
             await ptys.Connection.EmitAsync("frame part one");
-            await Task.Delay(300);
+
+            // Check as soon as the engine has the text, so a slow machine cannot run into the one second timeout.
+            await WaitForAsync(() => engine.Text.Contains("frame part one", StringComparison.Ordinal));
             Assert.Equal(0, Volatile.Read(ref updates));
 
             engine.SynchronizedOutput = false;
