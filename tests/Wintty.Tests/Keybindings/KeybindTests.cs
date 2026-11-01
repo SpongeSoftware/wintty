@@ -110,7 +110,7 @@ public class KeybindsTests
     [Fact]
     public void TryParseAction_RejectsUnknownNames()
     {
-        Assert.False(Keybinds.TryParseAction("new_window", out _));
+        Assert.False(Keybinds.TryParseAction("make_coffee", out _));
         Assert.Throws<ArgumentNullException>(() => Keybinds.TryParseAction(null!, out _));
     }
 
@@ -134,7 +134,7 @@ public class KeybindsTests
     [InlineData("ctrl+n", "expected keybind")]
     [InlineData("=new_tab", "expected keybind")]
     [InlineData("ctrl+n=", "expected keybind")]
-    [InlineData("ctrl+n=new_window", "unknown action 'new_window'")]
+    [InlineData("ctrl+n=make_coffee", "unknown action 'make_coffee'")]
     [InlineData("ctrl+wat=new_tab", "unknown key 'wat'")]
     public void TryParseEntry_ExplainsWhatIsWrong(string value, string expected)
     {
@@ -238,7 +238,7 @@ public class KeybindConfigTests
     [Fact]
     public void BadKeybindLines_AreReportedAtTheirLineAndSkipped()
     {
-        var result = ConfigParser.Parse("keybind = f9=new_window\nkeybind = nonsense\nkeybind = ctrl+q=new_tab");
+        var result = ConfigParser.Parse("keybind = f9=make_coffee\nkeybind = nonsense\nkeybind = ctrl+q=new_tab");
 
         Assert.Equal([1, 2], result.Diagnostics.Select(d => d.Line));
         Assert.Equal(TerminalAction.NewTab, result.Bindings[new KeyTrigger(TerminalKey.Q, KeyModifiers.Control)]);

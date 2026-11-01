@@ -122,3 +122,16 @@ public class ResizeTests
         Assert.False(set.ResizeFocused(FocusDirection.Left));
     }
 }
+
+public class FontSizingTests
+{
+    [Fact]
+    public void Zoom_MovesBySteps() => Assert.Equal(17f, Wintty.Core.Configuration.FontSizing.Zoom(15f, 2));
+
+    [Fact]
+    public void Zoom_StaysWithinTheConfigurableRange()
+    {
+        Assert.Equal(Wintty.Core.Configuration.FontSizing.Minimum, Wintty.Core.Configuration.FontSizing.Zoom(5f, -10));
+        Assert.Equal(Wintty.Core.Configuration.FontSizing.Maximum, Wintty.Core.Configuration.FontSizing.Zoom(199f, 10));
+    }
+}

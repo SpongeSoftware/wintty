@@ -42,6 +42,21 @@ public enum TerminalAction
     /// <summary>Make the focused pane fill the tab, or put it back.</summary>
     ToggleSplitZoom,
 
+    /// <summary>Make the text of the focused pane larger.</summary>
+    IncreaseFontSize,
+
+    /// <summary>Make the text of the focused pane smaller.</summary>
+    DecreaseFontSize,
+
+    /// <summary>Return the focused pane to the configured font size.</summary>
+    ResetFontSize,
+
+    /// <summary>Switch the window between full screen and normal.</summary>
+    ToggleFullscreen,
+
+    /// <summary>Open another wintty window.</summary>
+    NewWindow,
+
     /// <summary>Move the divider next to the focused pane to the left.</summary>
     ResizePaneLeft,
 
