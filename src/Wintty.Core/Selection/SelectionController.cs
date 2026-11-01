@@ -77,11 +77,11 @@ public sealed class SelectionController
         switch (_kind)
         {
             case SelectionKind.Line:
-                var lines = LinesAround(snapshot, row);
+                (long First, long Last) lines = LinesAround(snapshot, row);
                 Current = LineSelection(Math.Min(_originLines.First, lines.First), Math.Max(_originLines.Last, lines.Last));
                 break;
             case SelectionKind.Word:
-                var word = WordBoundary.Find(snapshot, row, column);
+                (int Start, int End) word = WordBoundary.Find(snapshot, row, column);
                 var originStart = new SelectionPoint(_origin.Row, _originWord.Start);
                 var originEnd = new SelectionPoint(_origin.Row, _originWord.End);
                 var wordStart = new SelectionPoint(point.Row, word.Start);
@@ -120,13 +120,13 @@ public sealed class SelectionController
     // A line that wrapped over several rows is selected as one.
     private static (long First, long Last) LinesAround(TerminalSnapshot snapshot, int row)
     {
-        var first = row;
+        int first = row;
         while (first > 0 && snapshot.IsWrapped(first))
         {
             first--;
         }
 
-        var last = row;
+        int last = row;
         while (last + 1 < snapshot.Rows && snapshot.IsWrapped(last + 1))
         {
             last++;

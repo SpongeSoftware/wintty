@@ -40,6 +40,7 @@ When adding behaviour, put it in the lowest layer that can own it and expose it 
 - **Every public type and member in the library projects needs XML docs.** Missing docs fail the CI build (`WinUI` app and tests are exempt).
 - **Tests are mandatory for new code.** The goal is full coverage and CI fails below 90% line coverage; raise the gate as coverage improves and never lower it. Use the fakes in `tests/Wintty.Tests/Fakes`. Tests that load the real native library carry `[Trait("Category", "Integration")]` and `[Collection("NativeEnvironment")]` so they run serially.
 - **Pin third-party GitHub Actions to a commit SHA** with the tag in a trailing comment. Dependabot updates them.
+- **Spell out types instead of `var`** unless the type is obvious from the right-hand side (`new Foo()`, a cast). The rule is in `.editorconfig` and enforced as a build error (`EnforceCodeStyleInBuild`); tests are exempt. `dotnet format style <project> --diagnostics IDE0007 IDE0008 --severity warn` fixes most violations.
 - **Target .NET 10.** C# union types arrive with .NET 11; until then model closed sets as sealed record hierarchies.
 - **New config options are added to `ConfigOptions` as well as `ConfigParser`.** The docs reference table is rendered from `ConfigOptions`; tests fail on any mismatch. Regenerate the page with `WINTTY_UPDATE_DOCS=1 dotnet test tests/Wintty.Tests -c Release`.
 - **Never commit generated output:** `artifacts/`, `coverage.json`, `bin/`, `obj/`. Line endings are LF (`.gitattributes`).

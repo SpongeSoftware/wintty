@@ -47,7 +47,7 @@ public sealed class GhosttyGateway : ITerminalEngineFactory, IPtyConnectionFacto
             Environment = options.Environment ?? new Dictionary<string, string>(),
         };
 
-        var connection = await GhosttyPtyConnectionFactory.StartAsync(native, cancellationToken).ConfigureAwait(false);
+        IGhosttyPtyConnection connection = await GhosttyPtyConnectionFactory.StartAsync(native, cancellationToken).ConfigureAwait(false);
         return new GhosttyPtyConnection(connection);
     }
 }

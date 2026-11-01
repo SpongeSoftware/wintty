@@ -77,10 +77,10 @@ public sealed class TerminalSession : IDisposable
         ArgumentNullException.ThrowIfNull(options);
         options.Validate();
 
-        var engine = engines.Create(new TerminalEngineOptions(options.Columns, options.Rows, scrollback));
+        ITerminalEngine engine = engines.Create(new TerminalEngineOptions(options.Columns, options.Rows, scrollback));
         try
         {
-            var pty = await ptys.StartAsync(options, cancellationToken).ConfigureAwait(false);
+            IPtyConnection pty = await ptys.StartAsync(options, cancellationToken).ConfigureAwait(false);
             return new TerminalSession(engine, pty);
         }
         catch
@@ -234,12 +234,12 @@ public sealed class TerminalSession : IDisposable
         lock (_engineLock)
         {
             // Reading history means moving the view, so put it back afterwards.
-            var original = Engine.CreateSnapshot().Scrollbar.Offset;
+            long original = Engine.CreateSnapshot().Scrollbar.Offset;
             try
             {
                 return Selection.SelectionText.Extract(selection, row =>
                 {
-                    var current = Engine.CreateSnapshot().Scrollbar.Offset;
+                    long current = Engine.CreateSnapshot().Scrollbar.Offset;
                     Engine.ScrollViewport((int)(row - current));
                     return Engine.CreateSnapshot();
                 });
@@ -412,13 +412,13 @@ public sealed class TerminalSession : IDisposable
 
     private async Task PumpAsync(CancellationToken token)
     {
-        var buffer = new byte[16 * 1024];
-        var holdFrame = false;
+        byte[] buffer = new byte[16 * 1024];
+        bool holdFrame = false;
         try
         {
             while (!token.IsCancellationRequested)
             {
-                var read = await _pty.Output.ReadAsync(buffer, token).ConfigureAwait(false);
+                int read = await _pty.Output.ReadAsync(buffer, token).ConfigureAwait(false);
                 if (read == 0)
                 {
                     break;

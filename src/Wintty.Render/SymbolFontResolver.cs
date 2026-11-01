@@ -31,14 +31,14 @@ public static class SymbolFontResolver
         ArgumentNullException.ThrowIfNull(installedFamilies);
         var installed = installedFamilies.ToList();
         var lookup = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
-        foreach (var family in installed)
+        foreach (string? family in installed)
         {
             lookup.TryAdd(family, family);
         }
 
-        foreach (var name in preferred ?? Preferred)
+        foreach (string name in preferred ?? Preferred)
         {
-            if (lookup.TryGetValue(name, out var found))
+            if (lookup.TryGetValue(name, out string? found))
             {
                 return found;
             }

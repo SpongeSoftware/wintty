@@ -1,3 +1,5 @@
+using Wintty.Core.Abstractions;
+
 namespace Wintty.Core.Configuration;
 
 /// <summary>Reads the wintty config file from disk.</summary>
@@ -22,9 +24,9 @@ public static class ConfigLoader
                 return new ConfigLoadResult(new WinttyConfig(), []);
             }
 
-            var parsed = ConfigParser.Parse(ReadShared(path));
+            ConfigLoadResult parsed = ConfigParser.Parse(ReadShared(path));
             var diagnostics = parsed.Diagnostics.ToList();
-            var colors = ThemeCatalog.Resolve(parsed.Config, themesDirectory, diagnostics);
+            TerminalColorScheme colors = ThemeCatalog.Resolve(parsed.Config, themesDirectory, diagnostics);
             diagnostics.Sort((a, b) => a.Line.CompareTo(b.Line));
             return new ConfigLoadResult(parsed.Config, diagnostics) { Colors = colors, Bindings = parsed.Bindings };
         }

@@ -48,7 +48,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     {
         _native = native;
         _defaults = options;
-        var status = native.TerminalNew(
+        int status = native.TerminalNew(
             new GhosttyNativeLibrary.TerminalOptions
             {
                 Columns = checked((ushort)options.Columns),
@@ -108,7 +108,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         get
         {
             ThrowIfDisposed();
-            var status = _native.TerminalGetTitle(_handle, out var title);
+            int status = _native.TerminalGetTitle(_handle, out GhosttyNativeLibrary.NativeString title);
             if (status != GhosttyNativeLibrary.Success || title.Pointer == IntPtr.Zero || title.Length == 0)
             {
                 return null;
@@ -157,7 +157,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         _cachedSnapshot = null;
 
         // A pixel size of 0 means "not provided" until the renderer has measured a cell.
-        var status = _native.TerminalResize(
+        int status = _native.TerminalResize(
             _handle, checked((ushort)columns), checked((ushort)rows), (uint)_cellWidthPixels, (uint)_cellHeightPixels);
         ThrowIfFailed(status, "resize terminal");
         Columns = columns;
@@ -177,7 +177,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         _native.KeyEventSetConsumedMods(_keyEvent, GhosttyKeyMap.ToNative(input.ConsumedModifiers));
         _native.KeyEventSetUnshiftedCodepoint(_keyEvent, (uint)Math.Max(0, input.UnshiftedCodepoint));
 
-        var text = string.IsNullOrEmpty(input.Text) ? [] : Encoding.UTF8.GetBytes(input.Text);
+        byte[] text = string.IsNullOrEmpty(input.Text) ? [] : Encoding.UTF8.GetBytes(input.Text);
         Span<byte> buffer = stackalloc byte[MaxEncodedKeyLength];
         nuint written;
         int status;
@@ -199,7 +199,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         get
         {
             ThrowIfDisposed();
-            return _native.TerminalGetMouseTracking(_handle, out var enabled) == GhosttyNativeLibrary.Success && enabled != 0;
+            return _native.TerminalGetMouseTracking(_handle, out byte enabled) == GhosttyNativeLibrary.Success && enabled != 0;
         }
     }
 
@@ -281,8 +281,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         ThrowIfDisposed();
 
         // The encoder rewrites its input in place, and may add the bracketed-paste markers, so work on a copy.
-        var data = Encoding.UTF8.GetBytes(text);
-        var output = new byte[data.Length + PasteMarkerAllowance];
+        byte[] data = Encoding.UTF8.GetBytes(text);
+        byte[] output = new byte[data.Length + PasteMarkerAllowance];
         nuint written;
         int status;
         fixed (byte* dataPointer = data)
@@ -329,27 +329,27 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     {
         ThrowIfFailed(_native.RenderStateUpdate(_renderState, _handle), "update render state");
 
-        ThrowIfFailed(_native.RenderStateGetU16(_renderState, GhosttyNativeLibrary.RenderStateDataCols, out var columns), "read columns");
-        ThrowIfFailed(_native.RenderStateGetU16(_renderState, GhosttyNativeLibrary.RenderStateDataRows, out var rows), "read rows");
-        var defaultForeground = ReadStateColor(GhosttyNativeLibrary.RenderStateDataColorForeground);
-        var defaultBackground = ReadStateColor(GhosttyNativeLibrary.RenderStateDataColorBackground);
+        ThrowIfFailed(_native.RenderStateGetU16(_renderState, GhosttyNativeLibrary.RenderStateDataCols, out ushort columns), "read columns");
+        ThrowIfFailed(_native.RenderStateGetU16(_renderState, GhosttyNativeLibrary.RenderStateDataRows, out ushort rows), "read rows");
+        TerminalColor defaultForeground = ReadStateColor(GhosttyNativeLibrary.RenderStateDataColorForeground);
+        TerminalColor defaultBackground = ReadStateColor(GhosttyNativeLibrary.RenderStateDataColorBackground);
 
         var cells = new TerminalCell[columns * rows];
         var palette = new GhosttyNativeLibrary.NativeColor[GhosttyNativeLibrary.RenderStatePaletteLength];
-        var paletteOrNull = _native.RenderStateColorsGet(_renderState, palette) == GhosttyNativeLibrary.Success ? palette : null;
-        var iterator = _rowIterator;
+        GhosttyNativeLibrary.NativeColor[]? paletteOrNull = _native.RenderStateColorsGet(_renderState, palette) == GhosttyNativeLibrary.Success ? palette : null;
+        nint iterator = _rowIterator;
         ThrowIfFailed(
             _native.RenderStateGetHandle(_renderState, GhosttyNativeLibrary.RenderStateDataRowIterator, ref iterator),
             "begin row iteration");
 
-        var wrapped = new bool[rows];
-        var row = 0;
+        bool[] wrapped = new bool[rows];
+        int row = 0;
         while (row < rows && _native.RowIteratorNext(iterator))
         {
             wrapped[row] = IsWrapContinuation(iterator);
-            var rowCells = _rowCells;
+            nint rowCells = _rowCells;
             ThrowIfFailed(_native.RowGetCells(iterator, ref rowCells), "read row cells");
-            for (var column = 0; column < columns; column++)
+            for (int column = 0; column < columns; column++)
             {
                 cells[(row * columns) + column] = ReadCell(rowCells, column, defaultForeground, defaultBackground, paletteOrNull);
             }
@@ -358,7 +358,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         }
 
         // Rows the iterator did not produce stay blank rather than null-ish default structs.
-        for (var index = row * columns; index < cells.Length; index++)
+        for (int index = row * columns; index < cells.Length; index++)
         {
             cells[index] = new TerminalCell(string.Empty, defaultForeground, defaultBackground);
         }
@@ -369,7 +369,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     /// <inheritdoc />
     public void Dispose()
     {
-        var handle = Interlocked.Exchange(ref _handle, IntPtr.Zero);
+        nint handle = Interlocked.Exchange(ref _handle, IntPtr.Zero);
         if (handle == IntPtr.Zero)
         {
             return;
@@ -416,7 +416,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         ThrowIfFailed(_native.RenderStateUpdate(_renderState, _handle), "update render state");
         var palette = new GhosttyNativeLibrary.NativeColor[GhosttyNativeLibrary.RenderStatePaletteLength];
         ThrowIfFailed(_native.RenderStateColorsGet(_renderState, palette), "read the palette");
-        foreach (var (index, color) in scheme.Entries)
+        foreach ((int index, TerminalColor color) in scheme.Entries)
         {
             palette[index] = new GhosttyNativeLibrary.NativeColor { Red = color.Red, Green = color.Green, Blue = color.Blue };
         }
@@ -429,12 +429,12 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 
     // True when the row carries on a line that was too long for the grid and so wrapped.
     private bool IsWrapContinuation(IntPtr iterator) =>
-        _native.RowGetRaw(iterator, out var raw) == GhosttyNativeLibrary.Success
-        && _native.RowGetWrapContinuation(raw, out var value) == GhosttyNativeLibrary.Success
+        _native.RowGetRaw(iterator, out ulong raw) == GhosttyNativeLibrary.Success
+        && _native.RowGetWrapContinuation(raw, out byte value) == GhosttyNativeLibrary.Success
         && value != 0;
 
     private ScrollbarState ReadScrollbar() =>
-        _native.TerminalGetScrollbar(_handle, out var bar) == GhosttyNativeLibrary.Success
+        _native.TerminalGetScrollbar(_handle, out GhosttyNativeLibrary.NativeScrollbar bar) == GhosttyNativeLibrary.Success
             ? new ScrollbarState((long)bar.Total, (long)bar.Offset, (long)bar.Length)
             : ScrollbarState.None;
 
@@ -477,7 +477,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
         // Exceptions must never cross into native code.
         try
         {
-            var handler = ResponseHandler;
+            TerminalResponseHandler? handler = ResponseHandler;
             if (handler is not null && data != IntPtr.Zero && length > 0)
             {
                 handler(new ReadOnlySpan<byte>((void*)data, checked((int)length)));
@@ -510,15 +510,15 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 
     private TerminalColor ReadStateColor(int data)
     {
-        ThrowIfFailed(_native.RenderStateGetColor(_renderState, data, out var color), "read colour");
+        ThrowIfFailed(_native.RenderStateGetColor(_renderState, data, out GhosttyNativeLibrary.NativeColor color), "read colour");
         return ToColor(color);
     }
 
     private CursorState ReadCursor()
     {
-        _native.RenderStateGetByte(_renderState, GhosttyNativeLibrary.RenderStateDataCursorVisible, out var visible);
-        _native.RenderStateGetByte(_renderState, GhosttyNativeLibrary.RenderStateDataCursorViewportHasValue, out var inViewport);
-        _native.RenderStateGetInt(_renderState, GhosttyNativeLibrary.RenderStateDataCursorVisualStyle, out var style);
+        _native.RenderStateGetByte(_renderState, GhosttyNativeLibrary.RenderStateDataCursorVisible, out byte visible);
+        _native.RenderStateGetByte(_renderState, GhosttyNativeLibrary.RenderStateDataCursorViewportHasValue, out byte inViewport);
+        _native.RenderStateGetInt(_renderState, GhosttyNativeLibrary.RenderStateDataCursorVisualStyle, out int style);
         ushort x = 0;
         ushort y = 0;
         if (inViewport != 0)
@@ -527,8 +527,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             _native.RenderStateGetU16(_renderState, GhosttyNativeLibrary.RenderStateDataCursorViewportY, out y);
         }
 
-        var shape = Enum.IsDefined((CursorStyle)style) ? (CursorStyle)style : CursorStyle.Block;
-        TerminalColor? color = _native.RenderStateGetColor(_renderState, RenderStateDataColorCursor, out var native) == GhosttyNativeLibrary.Success
+        CursorStyle shape = Enum.IsDefined((CursorStyle)style) ? (CursorStyle)style : CursorStyle.Block;
+        TerminalColor? color = _native.RenderStateGetColor(_renderState, RenderStateDataColorCursor, out GhosttyNativeLibrary.NativeColor native) == GhosttyNativeLibrary.Success
             ? ToColor(native)
             : null;
         return new CursorState(x, y, visible != 0 && inViewport != 0, shape, color);
@@ -543,11 +543,11 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     {
         ThrowIfFailed(_native.RowCellsSelect(rowCells, checked((ushort)column)), "select cell");
 
-        var text = string.Empty;
-        if (_native.RowCellsGetU32(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataGraphemesLength, out var length) == GhosttyNativeLibrary.Success
+        string text = string.Empty;
+        if (_native.RowCellsGetU32(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataGraphemesLength, out uint length) == GhosttyNativeLibrary.Success
             && length > 0)
         {
-            var codepoints = new uint[length];
+            uint[] codepoints = new uint[length];
             fixed (uint* buffer = codepoints)
             {
                 if (_native.RowCellsGetBuffer(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataGraphemesBuffer, (IntPtr)buffer) == GhosttyNativeLibrary.Success)
@@ -557,26 +557,26 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             }
         }
 
-        var foreground = _native.RowCellsGetColor(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataForegroundColor, out var fg) == GhosttyNativeLibrary.Success
+        TerminalColor foreground = _native.RowCellsGetColor(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataForegroundColor, out GhosttyNativeLibrary.NativeColor fg) == GhosttyNativeLibrary.Success
             ? ToColor(fg)
             : defaultForeground;
-        var background = _native.RowCellsGetColor(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataBackgroundColor, out var bg) == GhosttyNativeLibrary.Success
+        TerminalColor background = _native.RowCellsGetColor(rowCells, GhosttyNativeLibrary.RenderStateRowCellsDataBackgroundColor, out GhosttyNativeLibrary.NativeColor bg) == GhosttyNativeLibrary.Success
             ? ToColor(bg)
             : defaultBackground;
 
-        var attributes = CellAttributes.None;
-        var underline = UnderlineStyle.None;
+        CellAttributes attributes = CellAttributes.None;
+        UnderlineStyle underline = UnderlineStyle.None;
         TerminalColor? underlineColor = null;
-        if (_native.RowCellsGetStyle(rowCells, out var style) == GhosttyNativeLibrary.Success)
+        if (_native.RowCellsGetStyle(rowCells, out GhosttyNativeLibrary.NativeStyle style) == GhosttyNativeLibrary.Success)
         {
             attributes = ToAttributes(style);
             underline = Enum.IsDefined((UnderlineStyle)style.Underline) ? (UnderlineStyle)style.Underline : UnderlineStyle.Single;
             underlineColor = ReadUnderlineColor(style, palette);
         }
 
-        var width = 1;
-        if (_native.RowCellsGetRaw(rowCells, out var raw) == GhosttyNativeLibrary.Success
-            && _native.CellGetWide(raw, out var wide) == GhosttyNativeLibrary.Success)
+        int width = 1;
+        if (_native.RowCellsGetRaw(rowCells, out ulong raw) == GhosttyNativeLibrary.Success
+            && _native.CellGetWide(raw, out int wide) == GhosttyNativeLibrary.Success)
         {
             width = wide switch
             {
@@ -591,7 +591,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 
     private static TerminalColor? ReadUnderlineColor(GhosttyNativeLibrary.NativeStyle style, GhosttyNativeLibrary.NativeColor[]? palette)
     {
-        var color = style.UnderlineColor;
+        GhosttyNativeLibrary.NativeStyleColor color = style.UnderlineColor;
         if (color.Tag == GhosttyNativeLibrary.StyleColorTagRgb)
         {
             return ToColor(color.Value.Rgb);
@@ -609,7 +609,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private static string ToText(uint[] codepoints)
     {
         var builder = new StringBuilder(codepoints.Length);
-        foreach (var codepoint in codepoints)
+        foreach (uint codepoint in codepoints)
         {
             if (Rune.IsValid(codepoint))
             {
@@ -622,7 +622,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
 
     private static CellAttributes ToAttributes(GhosttyNativeLibrary.NativeStyle style)
     {
-        var attributes = CellAttributes.None;
+        CellAttributes attributes = CellAttributes.None;
         if (style.Bold != 0) { attributes |= CellAttributes.Bold; }
         if (style.Italic != 0) { attributes |= CellAttributes.Italic; }
         if (style.Faint != 0) { attributes |= CellAttributes.Faint; }

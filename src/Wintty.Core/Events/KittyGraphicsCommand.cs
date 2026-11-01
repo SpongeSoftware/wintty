@@ -40,10 +40,10 @@ public sealed record KittyGraphicsCommand(GraphicsAction Action, IReadOnlyDictio
     public int Format => Number('f', 32);
 
     /// <summary>How the data arrives: <c>d</c> direct (default), <c>f</c> file, <c>t</c> temporary file or <c>s</c> shared memory.</summary>
-    public char Transmission => Keys.TryGetValue('t', out var value) && value.Length == 1 ? value[0] : 'd';
+    public char Transmission => Keys.TryGetValue('t', out string? value) && value.Length == 1 ? value[0] : 'd';
 
     /// <summary>Whether the data is zlib-compressed (<c>o=z</c>).</summary>
-    public bool Compressed => Keys.TryGetValue('o', out var value) && value == "z";
+    public bool Compressed => Keys.TryGetValue('o', out string? value) && value == "z";
 
     /// <summary>The image id (<c>i</c>), or 0 when none was given.</summary>
     public int ImageId => Number('i', 0);
@@ -77,7 +77,7 @@ public sealed record KittyGraphicsCommand(GraphicsAction Action, IReadOnlyDictio
     /// <param name="fallback">Value when the key is absent or not a number.</param>
     /// <returns>The value.</returns>
     public int Number(char key, int fallback) =>
-        Keys.TryGetValue(key, out var text) && int.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out var value)
+        Keys.TryGetValue(key, out string? text) && int.TryParse(text, NumberStyles.AllowLeadingSign, CultureInfo.InvariantCulture, out int value)
             ? value
             : fallback;
 
@@ -92,15 +92,15 @@ public sealed record KittyGraphicsCommand(GraphicsAction Action, IReadOnlyDictio
             return null;
         }
 
-        var body = apc[1..];
-        var separator = body.IndexOf(';', StringComparison.Ordinal);
-        var control = separator < 0 ? body : body[..separator];
-        var data = separator < 0 ? string.Empty : body[(separator + 1)..];
+        string body = apc[1..];
+        int separator = body.IndexOf(';', StringComparison.Ordinal);
+        string control = separator < 0 ? body : body[..separator];
+        string data = separator < 0 ? string.Empty : body[(separator + 1)..];
 
         var keys = new Dictionary<char, string>();
         if (control.Length > 0)
         {
-            foreach (var pair in control.Split(','))
+            foreach (string pair in control.Split(','))
             {
                 if (pair.Length < 2 || pair[1] != '=')
                 {
@@ -111,7 +111,7 @@ public sealed record KittyGraphicsCommand(GraphicsAction Action, IReadOnlyDictio
             }
         }
 
-        var action = keys.TryGetValue('a', out var actionText) && actionText.Length == 1 ? ActionFor(actionText[0]) : GraphicsAction.Transmit;
+        GraphicsAction? action = keys.TryGetValue('a', out string? actionText) && actionText.Length == 1 ? ActionFor(actionText[0]) : GraphicsAction.Transmit;
         return action is null ? null : new KittyGraphicsCommand(action.Value, keys, data);
     }
 

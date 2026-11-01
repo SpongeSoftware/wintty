@@ -32,7 +32,7 @@ public sealed class ConfigWatcher : IDisposable
         _debounce = debounce;
         _onReload = onReload;
         _themesDirectory = themesDirectory;
-        var directory = Path.GetDirectoryName(_path)!;
+        string directory = Path.GetDirectoryName(_path)!;
         Directory.CreateDirectory(directory);
 
         _timer = new Timer(_ => Reload(), null, Timeout.Infinite, Timeout.Infinite);

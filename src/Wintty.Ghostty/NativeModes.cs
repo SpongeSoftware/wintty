@@ -36,18 +36,18 @@ internal static unsafe class NativeModes
         }
 
         byte value = 0;
-        var status = ((delegate* unmanaged[Cdecl]<IntPtr, ushort, byte*, int>)ModeGet.Value)(terminal, mode, &value);
+        int status = ((delegate* unmanaged[Cdecl]<IntPtr, ushort, byte*, int>)ModeGet.Value)(terminal, mode, &value);
         return status == 0 && value != 0;
     }
 
     private static nint Resolve()
     {
-        var directories = new[] { Environment.GetEnvironmentVariable(NativeAssetLocator.OverrideVariable), AppContext.BaseDirectory };
-        foreach (var directory in directories.Where(d => !string.IsNullOrEmpty(d)))
+        string?[] directories = new[] { Environment.GetEnvironmentVariable(NativeAssetLocator.OverrideVariable), AppContext.BaseDirectory };
+        foreach (string? directory in directories.Where(d => !string.IsNullOrEmpty(d)))
         {
             // Loading an already-loaded library returns the same handle, so this shares the wrapper copy.
-            if (NativeLibrary.TryLoad(Path.Combine(directory!, LibraryName), out var library)
-                && NativeLibrary.TryGetExport(library, "ghostty_terminal_mode_get", out var export))
+            if (NativeLibrary.TryLoad(Path.Combine(directory!, LibraryName), out nint library)
+                && NativeLibrary.TryGetExport(library, "ghostty_terminal_mode_get", out nint export))
             {
                 return export;
             }

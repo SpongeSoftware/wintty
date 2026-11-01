@@ -58,15 +58,15 @@ public sealed record TerminalSelection(SelectionPoint Anchor, SelectionPoint Act
 
         if (Kind == SelectionKind.Block)
         {
-            var left = Math.Min(Anchor.Column, Active.Column);
-            var right = Math.Max(Anchor.Column, Active.Column);
+            int left = Math.Min(Anchor.Column, Active.Column);
+            int right = Math.Max(Anchor.Column, Active.Column);
             return (left, Math.Min(columns, right + 1));
         }
 
-        var start = Start;
-        var end = End;
-        var from = row == start.Row ? start.Column : 0;
-        var to = row == end.Row ? Math.Min(columns, end.Column + 1) : columns;
+        SelectionPoint start = Start;
+        SelectionPoint end = End;
+        int from = row == start.Row ? start.Column : 0;
+        int to = row == end.Row ? Math.Min(columns, end.Column + 1) : columns;
         return from < to ? (from, to) : null;
     }
 }

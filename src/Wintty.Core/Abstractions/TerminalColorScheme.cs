@@ -37,7 +37,7 @@ public sealed record TerminalColorScheme(
         ArgumentNullException.ThrowIfNull(top);
 
         var palette = new Dictionary<int, TerminalColor>(Entries);
-        foreach (var (index, color) in top.Entries)
+        foreach ((int index, TerminalColor color) in top.Entries)
         {
             palette[index] = color;
         }
@@ -53,7 +53,7 @@ public sealed record TerminalColorScheme(
     /// <exception cref="ArgumentOutOfRangeException">A palette index is out of range.</exception>
     public void Validate()
     {
-        foreach (var index in Entries.Keys)
+        foreach (int index in Entries.Keys)
         {
             ArgumentOutOfRangeException.ThrowIfNegative(index);
             ArgumentOutOfRangeException.ThrowIfGreaterThanOrEqual(index, PaletteSize);

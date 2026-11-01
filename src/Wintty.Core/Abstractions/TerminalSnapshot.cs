@@ -207,9 +207,9 @@ public sealed class TerminalSnapshot
     public string GetRowText(int row)
     {
         var builder = new StringBuilder(Columns);
-        for (var column = 0; column < Columns; column++)
+        for (int column = 0; column < Columns; column++)
         {
-            var cell = this[column, row];
+            TerminalCell cell = this[column, row];
             if (cell.Width == 0)
             {
                 continue;

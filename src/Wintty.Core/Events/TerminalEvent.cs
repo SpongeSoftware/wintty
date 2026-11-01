@@ -33,15 +33,15 @@ public abstract record TerminalEvent
             return null;
         }
 
-        var rest = payload["file://".Length..];
-        var slash = rest.IndexOf('/', StringComparison.Ordinal);
+        string rest = payload["file://".Length..];
+        int slash = rest.IndexOf('/', StringComparison.Ordinal);
         if (slash < 0)
         {
             return null;
         }
 
-        var host = rest[..slash];
-        var path = Uri.UnescapeDataString(rest[slash..]);
+        string host = rest[..slash];
+        string path = Uri.UnescapeDataString(rest[slash..]);
         return new WorkingDirectoryReported(host, path);
     }
 
@@ -50,13 +50,13 @@ public abstract record TerminalEvent
     {
         if (payload.StartsWith("4;", StringComparison.Ordinal))
         {
-            var parts = payload.Split(';');
-            if (!int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out var state) || state > 4)
+            string[] parts = payload.Split(';');
+            if (!int.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out int state) || state > 4)
             {
                 return null;
             }
 
-            var percent = 0;
+            int percent = 0;
             if (parts.Length > 2 && !int.TryParse(parts[2], NumberStyles.None, CultureInfo.InvariantCulture, out percent))
             {
                 return null;
@@ -71,7 +71,7 @@ public abstract record TerminalEvent
     // OSC 777;notify;title;body
     private static TerminalEvent? ParseRxvtNotification(string payload)
     {
-        var parts = payload.Split(';', 3);
+        string[] parts = payload.Split(';', 3);
         if (parts.Length < 2 || parts[0] != "notify")
         {
             return null;
@@ -83,33 +83,33 @@ public abstract record TerminalEvent
     // OSC 99 carries "metadata;payload". Only plain text bodies and titles are understood.
     private static TerminalEvent? ParseKittyNotification(string payload)
     {
-        var separator = payload.IndexOf(';', StringComparison.Ordinal);
+        int separator = payload.IndexOf(';', StringComparison.Ordinal);
         if (separator < 0)
         {
             return null;
         }
 
-        var metadata = payload[..separator];
-        var text = payload[(separator + 1)..];
+        string metadata = payload[..separator];
+        string text = payload[(separator + 1)..];
         if (text.Length == 0)
         {
             return null;
         }
 
-        var isTitle = metadata.Split(':').Contains("p=title", StringComparer.Ordinal);
+        bool isTitle = metadata.Split(':').Contains("p=title", StringComparer.Ordinal);
         return isTitle ? new NotificationRequested(text, string.Empty) : new NotificationRequested(null, text);
     }
 
     // OSC 52;selection;base64 writes the clipboard; a "?" asks to read it.
     private static TerminalEvent? ParseClipboard(string payload)
     {
-        var parts = payload.Split(';', 2);
+        string[] parts = payload.Split(';', 2);
         if (parts.Length != 2)
         {
             return null;
         }
 
-        var selection = parts[0].Length == 0 ? "c" : parts[0];
+        string selection = parts[0].Length == 0 ? "c" : parts[0];
         if (parts[1] == "?")
         {
             return new ClipboardRequested(selection, null);
@@ -139,7 +139,7 @@ public sealed record WorkingDirectoryReported(string Host, string Path) : Termin
     {
         get
         {
-            var trimmed = Path.TrimStart('/');
+            string trimmed = Path.TrimStart('/');
             if (trimmed.Length >= 2 && char.IsAsciiLetter(trimmed[0]) && trimmed[1] == ':')
             {
                 return trimmed.Replace('/', '\\');

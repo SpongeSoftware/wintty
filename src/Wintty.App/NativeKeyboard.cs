@@ -15,7 +15,7 @@ internal static class NativeKeyboard
     /// <summary>Reads the modifier keys currently held (and the lock-key toggles).</summary>
     internal static KeyModifiers CurrentModifiers()
     {
-        var modifiers = KeyModifiers.None;
+        KeyModifiers modifiers = KeyModifiers.None;
         if (IsDown(VirtualKey.Shift)) { modifiers |= KeyModifiers.Shift; }
         if (IsDown(VirtualKey.Control)) { modifiers |= KeyModifiers.Control; }
         if (IsDown(VirtualKey.Menu)) { modifiers |= KeyModifiers.Alt; }
@@ -34,14 +34,14 @@ internal static class NativeKeyboard
     /// </returns>
     internal static string? TranslateText(int virtualKey, uint scanCode, KeyModifiers modifiers)
     {
-        var state = new byte[256];
+        byte[] state = new byte[256];
         if (modifiers.HasFlag(KeyModifiers.Shift)) { state[0x10] = 0x80; }
         if (modifiers.HasFlag(KeyModifiers.Control)) { state[0x11] = 0x80; }
         if (modifiers.HasFlag(KeyModifiers.Alt)) { state[0x12] = 0x80; }
         if (modifiers.HasFlag(KeyModifiers.CapsLock)) { state[0x14] = 0x01; }
 
         var buffer = new StringBuilder(8);
-        var result = ToUnicodeEx((uint)virtualKey, scanCode, state, buffer, buffer.Capacity, DoNotChangeKeyboardState, GetKeyboardLayout(0));
+        int result = ToUnicodeEx((uint)virtualKey, scanCode, state, buffer, buffer.Capacity, DoNotChangeKeyboardState, GetKeyboardLayout(0));
         return result switch
         {
             < 0 => null,

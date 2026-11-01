@@ -22,6 +22,7 @@ using Wintty.Core.Sessions;
 using Wintty.Ghostty;
 using Wintty.Input;
 using Wintty.Render;
+using Windows.Foundation;
 
 namespace Wintty.App;
 
@@ -128,7 +129,7 @@ public sealed partial class TerminalControl : UserControl
 
     private bool IsSystemDark()
     {
-        var background = _uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background);
+        Color background = _uiSettings.GetColorValue(Windows.UI.ViewManagement.UIColorType.Background);
         return ((background.R * 299) + (background.G * 587) + (background.B * 114)) / 1000 < 128;
     }
 
@@ -162,7 +163,7 @@ public sealed partial class TerminalControl : UserControl
     {
         try
         {
-            var directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "wintty");
+            string directory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "wintty");
             Directory.CreateDirectory(directory);
             File.AppendAllText(Path.Combine(directory, "wintty.log"), $"{DateTime.Now:O} {message}{Environment.NewLine}");
         }
@@ -174,13 +175,13 @@ public sealed partial class TerminalControl : UserControl
 
     private async Task StartSessionAsync()
     {
-        var loaded = ConfigLoader.Load(ConfigLoader.DefaultPath, ThemeCatalog.DefaultUserDirectory);
+        ConfigLoadResult loaded = ConfigLoader.Load(ConfigLoader.DefaultPath, ThemeCatalog.DefaultUserDirectory);
         _config = loaded.Config;
         _bindings = loaded.Bindings;
         ReportConfigProblems(loaded);
         MeasureCell();
         _grid = ComputeGrid();
-        var command = _config.Command is { } text ? CommandLine.Split(text) : null;
+        (string Application, IReadOnlyList<string> Arguments)? command = _config.Command is { } text ? CommandLine.Split(text) : null;
         var options = new PtyStartOptions(command?.Application ?? FindShell(), _grid.Columns, _grid.Rows)
         {
             WorkingDirectory = InitialDirectory is { } start && Directory.Exists(start) ? start : null,
@@ -194,10 +195,10 @@ public sealed partial class TerminalControl : UserControl
 
         _session = await TerminalSession.StartAsync(_gateway, _gateway, options, _config.ScrollbackLimit);
         ApplyCellPixelSize();
-        var dispatcher = DispatcherQueue;
+        Microsoft.UI.Dispatching.DispatcherQueue dispatcher = DispatcherQueue;
 
         // Dragging a window edge produces many sizes; apply only the one the drag settles on.
-        var session = _session;
+        TerminalSession session = _session;
         _resizer = new ResizeDebouncer(
             TimeSpan.FromMilliseconds(ResizeDelayMilliseconds),
             (columns, rows) =>
@@ -249,7 +250,7 @@ public sealed partial class TerminalControl : UserControl
         ReportConfigProblems(result);
         _formats.Clear();
         MeasureCell();
-        var grid = ComputeGrid();
+        (int Columns, int Rows) grid = ComputeGrid();
         if (grid != _grid)
         {
             _grid = grid;
@@ -296,8 +297,8 @@ public sealed partial class TerminalControl : UserControl
 
     private static string FindShell()
     {
-        var path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
-        foreach (var directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
+        string path = Environment.GetEnvironmentVariable("PATH") ?? string.Empty;
+        foreach (string directory in path.Split(Path.PathSeparator, StringSplitOptions.RemoveEmptyEntries))
         {
             try
             {
@@ -336,7 +337,7 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var scale = XamlRoot?.RasterizationScale ?? 1.0;
+        double scale = XamlRoot?.RasterizationScale ?? 1.0;
         var pixels = ((int)Math.Round(_cellWidth * scale), (int)Math.Round(_cellHeight * scale));
         if (pixels == _cellPixels || pixels.Item1 <= 0 || pixels.Item2 <= 0)
         {
@@ -349,7 +350,7 @@ public sealed partial class TerminalControl : UserControl
 
     private void OnCanvasSizeChanged(object sender, SizeChangedEventArgs e)
     {
-        var grid = ComputeGrid();
+        (int Columns, int Rows) grid = ComputeGrid();
         if (grid == _grid)
         {
             return;
@@ -382,7 +383,7 @@ public sealed partial class TerminalControl : UserControl
 
     private CanvasTextFormat FormatFor(FontRole role, bool bold, bool italic)
     {
-        if (!_formats.TryGetValue((role, bold, italic), out var format))
+        if (!_formats.TryGetValue((role, bold, italic), out CanvasTextFormat? format))
         {
             format = new CanvasTextFormat
             {
@@ -409,7 +410,7 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var session = _session;
+        TerminalSession? session = _session;
         if (session is null || _cellWidth <= 0)
         {
             return;
@@ -434,12 +435,12 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var plan = RenderPlanner.Build(snapshot, _cursorOn || FocusState == FocusState.Unfocused, _selection.Current);
-        var drawing = args.DrawingSession;
-        var origin = (float)_config.WindowPadding;
+        RenderPlan plan = RenderPlanner.Build(snapshot, _cursorOn || FocusState == FocusState.Unfocused, _selection.Current);
+        CanvasDrawingSession drawing = args.DrawingSession;
+        float origin = (float)_config.WindowPadding;
         drawing.Clear(ToColor(plan.Background));
 
-        foreach (var run in plan.Backgrounds)
+        foreach (BackgroundRun run in plan.Backgrounds)
         {
             drawing.FillRectangle(
                 origin + (run.Column * _cellWidth),
@@ -450,7 +451,7 @@ public sealed partial class TerminalControl : UserControl
         }
 
         // A translucent wash in the text colour keeps colours readable while marking the selection.
-        foreach (var run in plan.Selection ?? [])
+        foreach (SelectionRun run in plan.Selection ?? [])
         {
             drawing.FillRectangle(
                 origin + (run.Column * _cellWidth),
@@ -460,7 +461,7 @@ public sealed partial class TerminalControl : UserControl
                 ToColor(snapshot.DefaultForeground, 90));
         }
 
-        foreach (var run in plan.Texts)
+        foreach (TextRun run in plan.Texts)
         {
             drawing.DrawText(
                 run.Text,
@@ -470,7 +471,7 @@ public sealed partial class TerminalControl : UserControl
                 FormatFor(run.Role, run.Bold, run.Italic));
         }
 
-        foreach (var run in plan.Decorations)
+        foreach (DecorationRun run in plan.Decorations)
         {
             try
             {
@@ -508,7 +509,7 @@ public sealed partial class TerminalControl : UserControl
     {
         const float width = 6f;
         const float margin = 2f;
-        var height = (float)Canvas.ActualHeight;
+        float height = (float)Canvas.ActualHeight;
         drawing.FillRoundedRectangle(
             (float)Canvas.ActualWidth - width - margin,
             (float)(thumb.Top * height),
@@ -522,22 +523,22 @@ public sealed partial class TerminalControl : UserControl
     // A banner along the bottom so a mistyped config line is noticed without opening the log.
     private void DrawConfigProblems(CanvasDrawingSession drawing)
     {
-        var format = FormatFor(FontRole.Primary, false, false);
-        var height = (float)Canvas.ActualHeight;
-        var lines = _configProblems!.Split('\n').Length;
-        var bannerHeight = (lines * _cellHeight) + 8;
+        CanvasTextFormat format = FormatFor(FontRole.Primary, false, false);
+        float height = (float)Canvas.ActualHeight;
+        int lines = _configProblems!.Split('\n').Length;
+        float bannerHeight = (lines * _cellHeight) + 8;
         drawing.FillRectangle(0, height - bannerHeight, (float)Canvas.ActualWidth, bannerHeight, Color.FromArgb(230, 60, 0, 0));
         drawing.DrawText(_configProblems, 8, height - bannerHeight + 4, Colors.Tomato, format);
     }
 
     private void DrawDecoration(CanvasDrawingSession drawing, DecorationRun run, float origin)
     {
-        var x1 = origin + (run.Column * _cellWidth);
-        var x2 = x1 + (run.Length * _cellWidth);
-        var top = origin + (run.Row * _cellHeight);
-        var color = ToColor(run.Color);
-        var dotted = run.Kind == DecorationKind.DottedUnderline;
-        var dashed = run.Kind == DecorationKind.DashedUnderline || run.Kind == DecorationKind.CurlyUnderline;
+        float x1 = origin + (run.Column * _cellWidth);
+        float x2 = x1 + (run.Length * _cellWidth);
+        float top = origin + (run.Row * _cellHeight);
+        Color color = ToColor(run.Color);
+        bool dotted = run.Kind == DecorationKind.DottedUnderline;
+        bool dashed = run.Kind == DecorationKind.DashedUnderline || run.Kind == DecorationKind.CurlyUnderline;
         using var style = new CanvasStrokeStyle
         {
             DashStyle = dotted ? CanvasDashStyle.Dot : dashed ? CanvasDashStyle.Dash : CanvasDashStyle.Solid,
@@ -568,11 +569,11 @@ public sealed partial class TerminalControl : UserControl
     private void DrawCurlyUnderline(CanvasDrawingSession drawing, float x1, float x2, float y, Color color)
     {
         const float amplitude = 1.5f;
-        var half = Math.Max(2f, _cellWidth / 2f);
+        float half = Math.Max(2f, _cellWidth / 2f);
         using var path = new CanvasPathBuilder(drawing);
         path.BeginFigure(x1, y);
-        var up = false;
-        for (var x = x1 + half; x < x2 + half; x += half)
+        bool up = false;
+        for (float x = x1 + half; x < x2 + half; x += half)
         {
             path.AddLine(Math.Min(x, x2), up ? y : y - amplitude);
             up = !up;
@@ -585,10 +586,10 @@ public sealed partial class TerminalControl : UserControl
 
     private void DrawCursor(CanvasDrawingSession drawing, CursorShape cursor, float origin)
     {
-        var x = origin + (cursor.Column * _cellWidth);
-        var y = origin + (cursor.Row * _cellHeight);
-        var width = cursor.CellCount * _cellWidth;
-        var color = ToColor(cursor.Color, 190);
+        float x = origin + (cursor.Column * _cellWidth);
+        float y = origin + (cursor.Row * _cellHeight);
+        float width = cursor.CellCount * _cellWidth;
+        Color color = ToColor(cursor.Color, 190);
         switch (cursor.Style)
         {
             case CursorStyle.Bar:
@@ -613,7 +614,7 @@ public sealed partial class TerminalControl : UserControl
 
     private void HandleKey(KeyRoutedEventArgs e, KeyAction action)
     {
-        var virtualKey = (int)e.Key;
+        int virtualKey = (int)e.Key;
 
         // While an IME is composing, the text arrives through CharacterReceived instead.
         if (_session is null || virtualKey == VirtualKeyMap.ProcessKey)
@@ -621,27 +622,27 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var key = VirtualKeyMap.Map(virtualKey, e.KeyStatus.IsExtendedKey);
+        TerminalKey key = VirtualKeyMap.Map(virtualKey, e.KeyStatus.IsExtendedKey);
         if (key == TerminalKey.Unidentified)
         {
             return;
         }
 
-        var modifiers = NativeKeyboard.CurrentModifiers();
+        KeyModifiers modifiers = NativeKeyboard.CurrentModifiers();
         if (TryBoundAction(key, modifiers, action))
         {
             e.Handled = true;
             return;
         }
 
-        var text = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, modifiers);
+        string? text = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, modifiers);
         if (text is null)
         {
             // Dead key (for example an accent): let the composed character arrive via CharacterReceived.
             return;
         }
 
-        var consumed = KeyModifiers.None;
+        KeyModifiers consumed = KeyModifiers.None;
         if (text.Length > 0 && text[0] >= ' ' && text[0] != '')
         {
             // AltGr is reported as Ctrl+Alt; the layout already folded it into the text.
@@ -661,8 +662,8 @@ public sealed partial class TerminalControl : UserControl
             text = null;
         }
 
-        var unshifted = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, KeyModifiers.None);
-        var codepoint = string.IsNullOrEmpty(unshifted) || unshifted[0] < ' ' ? 0 : char.ConvertToUtf32(unshifted, 0);
+        string? unshifted = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, KeyModifiers.None);
+        int codepoint = string.IsNullOrEmpty(unshifted) || unshifted[0] < ' ' ? 0 : char.ConvertToUtf32(unshifted, 0);
 
         if (_session.SendKey(new KeyInput(key, modifiers, action, text, codepoint, consumed)) && action != KeyAction.Release)
         {
@@ -678,7 +679,7 @@ public sealed partial class TerminalControl : UserControl
     // Reached only for text the key handler did not take: IME composition, dead-key results and unmapped keys.
     private void OnCharacterReceived(UIElement sender, CharacterReceivedRoutedEventArgs e)
     {
-        var character = e.Character;
+        char character = e.Character;
         if (character < ' ' || character == '')
         {
             return;
@@ -691,7 +692,7 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var text = char.IsLowSurrogate(character) && _pendingHighSurrogate != ' '
+        string text = char.IsLowSurrogate(character) && _pendingHighSurrogate != ' '
             ? new string([_pendingHighSurrogate, character])
             : character.ToString();
         _pendingHighSurrogate = ' ';
@@ -702,7 +703,7 @@ public sealed partial class TerminalControl : UserControl
     private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
     {
         Focus(FocusState.Pointer);
-        var button = ButtonOf(e.GetCurrentPoint(Canvas).Properties);
+        MouseButton button = ButtonOf(e.GetCurrentPoint(Canvas).Properties);
         if (button != MouseButton.None && !TryReport(MouseAction.Press, button, e))
         {
             if (button == MouseButton.Left)
@@ -755,7 +756,7 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var button = _heldButton;
+        MouseButton button = _heldButton;
         _heldButton = MouseButton.None;
         Canvas.ReleasePointerCapture(e.Pointer);
         if (button != MouseButton.None && TryReport(MouseAction.Release, button, e))
@@ -771,23 +772,23 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var properties = e.GetCurrentPoint(Canvas).Properties;
-        var modifiers = NativeKeyboard.CurrentModifiers();
+        PointerPointProperties properties = e.GetCurrentPoint(Canvas).Properties;
+        KeyModifiers modifiers = NativeKeyboard.CurrentModifiers();
         _wheelRemainder += properties.MouseWheelDelta / WheelNotch;
-        var notches = (int)_wheelRemainder;
+        int notches = (int)_wheelRemainder;
         if (notches == 0)
         {
             return;
         }
 
         _wheelRemainder -= notches;
-        var reporting = session.MouseTracking && !modifiers.HasFlag(KeyModifiers.Shift);
+        bool reporting = session.MouseTracking && !modifiers.HasFlag(KeyModifiers.Shift);
         if (reporting)
         {
-            var button = properties.IsHorizontalMouseWheel
+            MouseButton button = properties.IsHorizontalMouseWheel
                 ? (notches > 0 ? MouseButton.WheelRight : MouseButton.WheelLeft)
                 : (notches > 0 ? MouseButton.WheelUp : MouseButton.WheelDown);
-            for (var step = 0; step < Math.Abs(notches); step++)
+            for (int step = 0; step < Math.Abs(notches); step++)
             {
                 TryReport(MouseAction.Press, button, e);
             }
@@ -811,16 +812,16 @@ public sealed partial class TerminalControl : UserControl
     // Sends a mouse report when the program asked for them. Holding Shift bypasses reporting.
     private bool TryReport(MouseAction action, MouseButton button, PointerRoutedEventArgs e)
     {
-        var modifiers = NativeKeyboard.CurrentModifiers();
+        KeyModifiers modifiers = NativeKeyboard.CurrentModifiers();
         if (_session is not { } session || _cellPixels.Width <= 0 || modifiers.HasFlag(KeyModifiers.Shift))
         {
             return false;
         }
 
         // Positions are sent in physical pixels relative to the grid, matching the cell size the engine was given.
-        var point = e.GetCurrentPoint(Canvas).Position;
-        var x = (point.X - _config.WindowPadding) / _cellWidth * _cellPixels.Width;
-        var y = (point.Y - _config.WindowPadding) / _cellHeight * _cellPixels.Height;
+        Point point = e.GetCurrentPoint(Canvas).Position;
+        double x = (point.X - _config.WindowPadding) / _cellWidth * _cellPixels.Width;
+        double y = (point.Y - _config.WindowPadding) / _cellHeight * _cellPixels.Height;
         x = Math.Clamp(x, 0, (_grid.Columns * _cellPixels.Width) - 1);
         y = Math.Clamp(y, 0, (_grid.Rows * _cellPixels.Height) - 1);
         return session.SendMouse(new MouseInput(action, button, x, y, modifiers));
@@ -845,7 +846,7 @@ public sealed partial class TerminalControl : UserControl
     // Looks the key up in the bindings from the config; actions that are not built yet pass the key on to the program.
     private bool TryBoundAction(TerminalKey key, KeyModifiers modifiers, KeyAction action)
     {
-        if (!_bindings.TryGetValue(KeyTrigger.From(key, modifiers), out var bound)
+        if (!_bindings.TryGetValue(KeyTrigger.From(key, modifiers), out TerminalAction bound)
             || !(IsImplemented(bound) || (ActionRequested is not null && bound != TerminalAction.Unbind)))
         {
             return false;
@@ -872,7 +873,7 @@ public sealed partial class TerminalControl : UserControl
         _fontSizeOverride = steps == 0 ? null : FontSizing.Zoom(EffectiveFontSize, steps);
         _formats.Clear();
         MeasureCell();
-        var grid = ComputeGrid();
+        (int Columns, int Rows) grid = ComputeGrid();
         if (grid != _grid)
         {
             _grid = grid;
@@ -928,7 +929,7 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var text = session.GetSelectedText(selection);
+        string text = session.GetSelectedText(selection);
         if (text.Length == 0)
         {
             return;
@@ -943,13 +944,13 @@ public sealed partial class TerminalControl : UserControl
     {
         try
         {
-            var content = Clipboard.GetContent();
+            DataPackageView content = Clipboard.GetContent();
             if (_session is not { } session || !content.Contains(StandardDataFormats.Text))
             {
                 return;
             }
 
-            var text = await content.GetTextAsync();
+            string text = await content.GetTextAsync();
             if (string.IsNullOrEmpty(text))
             {
                 return;
@@ -972,7 +973,7 @@ public sealed partial class TerminalControl : UserControl
 
     private async Task<bool> ConfirmPasteAsync(string text)
     {
-        var lines = text.Split('\n').Length;
+        int lines = text.Split('\n').Length;
         var dialog = new ContentDialog
         {
             XamlRoot = XamlRoot,
@@ -992,14 +993,14 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var cell = CellUnder(e);
-        var now = Environment.TickCount64;
+        (int Column, int Row) cell = CellUnder(e);
+        long now = Environment.TickCount64;
         _clickCount = cell == _lastClickCell && now - _lastClickTick <= MultiClickMilliseconds ? _clickCount + 1 : 1;
         _lastClickCell = cell;
         _lastClickTick = now;
         _lastDragCell = cell;
 
-        var block = NativeKeyboard.CurrentModifiers().HasFlag(KeyModifiers.Alt);
+        bool block = NativeKeyboard.CurrentModifiers().HasFlag(KeyModifiers.Alt);
         lock (session.SyncRoot)
         {
             _selection.Begin(session.Engine.CreateSnapshot(), cell.Column, cell.Row, _clickCount, block);
@@ -1017,7 +1018,7 @@ public sealed partial class TerminalControl : UserControl
         }
 
         // Dragging past the top or bottom edge scrolls the view so the selection can grow into history.
-        var y = e.GetCurrentPoint(Canvas).Position.Y;
+        double y = e.GetCurrentPoint(Canvas).Position.Y;
         if (y < _config.WindowPadding)
         {
             session.ScrollBy(-1);
@@ -1027,7 +1028,7 @@ public sealed partial class TerminalControl : UserControl
             session.ScrollBy(1);
         }
 
-        var cell = CellUnder(e);
+        (int Column, int Row) cell = CellUnder(e);
         if (cell == _lastDragCell && y >= _config.WindowPadding && y <= Canvas.ActualHeight - _config.WindowPadding)
         {
             return;
@@ -1044,7 +1045,7 @@ public sealed partial class TerminalControl : UserControl
 
     private (int Column, int Row) CellUnder(PointerRoutedEventArgs e)
     {
-        var point = e.GetCurrentPoint(Canvas).Position;
+        Point point = e.GetCurrentPoint(Canvas).Position;
         return CellHitTester.CellAt(point.X, point.Y, _cellWidth, _cellHeight, _config.WindowPadding, _grid.Columns, _grid.Rows);
     }
 }

@@ -23,14 +23,14 @@ public static class SelectionText
 
         var builder = new StringBuilder();
         TerminalSnapshot? page = null;
-        for (var row = selection.FirstRow; row <= selection.LastRow; row++)
+        for (long row = selection.FirstRow; row <= selection.LastRow; row++)
         {
             if (page is null || row < page.Scrollbar.Offset || row >= page.Scrollbar.Offset + page.Rows)
             {
                 page = pageAt(row);
             }
 
-            var viewRow = (int)(row - page.Scrollbar.Offset);
+            int viewRow = (int)(row - page.Scrollbar.Offset);
             if (viewRow < 0 || viewRow >= page.Rows)
             {
                 break;
@@ -41,8 +41,8 @@ public static class SelectionText
                 continue;
             }
 
-            var line = ReadCells(page, viewRow, start, end);
-            var continues = false;
+            string line = ReadCells(page, viewRow, start, end);
+            bool continues = false;
             if (row < selection.LastRow && selection.Kind != SelectionKind.Block)
             {
                 // A wrap flag lives on the next row, which may be on the next page; keep that page for the next turn.
@@ -52,7 +52,7 @@ public static class SelectionText
                     viewRow = (int)(row + 1 - page.Scrollbar.Offset) - 1;
                 }
 
-                var nextView = viewRow + 1;
+                int nextView = viewRow + 1;
                 continues = nextView >= 0 && nextView < page.Rows && page.IsWrapped(nextView);
             }
 
@@ -69,9 +69,9 @@ public static class SelectionText
     private static string ReadCells(TerminalSnapshot page, int row, int start, int end)
     {
         var builder = new StringBuilder();
-        for (var column = start; column < end; column++)
+        for (int column = start; column < end; column++)
         {
-            var cell = page[column, row];
+            TerminalCell cell = page[column, row];
             if (cell.Width == 0)
             {
                 continue;

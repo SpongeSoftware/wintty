@@ -58,7 +58,7 @@ public sealed class TabSet
     public Tab AddTab()
     {
         var tab = new Tab(_nextTabId++, new PaneId(_nextPaneId++));
-        var index = SelectedIndex < 0 ? 0 : SelectedIndex + 1;
+        int index = SelectedIndex < 0 ? 0 : SelectedIndex + 1;
         _tabs.Insert(index, tab);
         SelectedIndex = index;
         return tab;
@@ -69,7 +69,7 @@ public sealed class TabSet
     /// <returns>The panes that were in it, so their sessions can be disposed; empty when the tab is unknown.</returns>
     public IReadOnlyList<PaneId> CloseTab(int tabId)
     {
-        var index = _tabs.FindIndex(t => t.Id == tabId);
+        int index = _tabs.FindIndex(t => t.Id == tabId);
         if (index < 0)
         {
             return [];
@@ -127,8 +127,8 @@ public sealed class TabSet
             return;
         }
 
-        var selected = Selected;
-        var tab = _tabs[from];
+        Tab? selected = Selected;
+        Tab tab = _tabs[from];
         _tabs.RemoveAt(from);
         _tabs.Insert(to, tab);
         SelectedIndex = _tabs.IndexOf(selected!);
@@ -184,7 +184,7 @@ public sealed class TabSet
             return false;
         }
 
-        var remaining = PaneLayout.Close(tab.Root, pane);
+        PaneNode? remaining = PaneLayout.Close(tab.Root, pane);
         if (remaining is null)
         {
             CloseTab(tab.Id);
@@ -246,8 +246,8 @@ public sealed class TabSet
             return false;
         }
 
-        var resized = PaneLayout.Resize(tab.Root, tab.Focused, direction, amount);
-        var changed = !ReferenceEquals(resized, tab.Root) && resized != tab.Root;
+        PaneNode resized = PaneLayout.Resize(tab.Root, tab.Focused, direction, amount);
+        bool changed = !ReferenceEquals(resized, tab.Root) && resized != tab.Root;
         tab.Root = resized;
         return changed;
     }

@@ -19,14 +19,14 @@ public static class WordBoundary
     public static (int Start, int End) Find(TerminalSnapshot snapshot, int row, int column)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
-        var kind = KindAt(snapshot, row, column);
-        var start = column;
+        int kind = KindAt(snapshot, row, column);
+        int start = column;
         while (start > 0 && KindAt(snapshot, row, start - 1) == kind)
         {
             start--;
         }
 
-        var end = column;
+        int end = column;
         while (end < snapshot.Columns - 1 && KindAt(snapshot, row, end + 1) == kind)
         {
             end++;
@@ -37,7 +37,7 @@ public static class WordBoundary
 
     private static int KindAt(TerminalSnapshot snapshot, int row, int column)
     {
-        var cell = snapshot[column, row];
+        TerminalCell cell = snapshot[column, row];
         if (cell.Width == 0)
         {
             // The trailing half of a wide character belongs to the character before it.

@@ -35,7 +35,7 @@ public static class ThemeCatalog
             return false;
         }
 
-        var text = ReadUserTheme(name, userDirectory) ?? ReadBuiltIn(name);
+        string? text = ReadUserTheme(name, userDirectory) ?? ReadBuiltIn(name);
         if (text is null)
         {
             return false;
@@ -63,7 +63,7 @@ public static class ThemeCatalog
             return config.ExplicitColors;
         }
 
-        if (TryGet(config.Theme, userDirectory, out var theme))
+        if (TryGet(config.Theme, userDirectory, out TerminalColorScheme? theme))
         {
             return theme.Overlay(config.ExplicitColors);
         }
@@ -85,7 +85,7 @@ public static class ThemeCatalog
 
         try
         {
-            var path = Path.Combine(directory, name);
+            string path = Path.Combine(directory, name);
             return File.Exists(path) ? File.ReadAllText(path) : null;
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
@@ -96,12 +96,12 @@ public static class ThemeCatalog
 
     private static string? ReadBuiltIn(string name)
     {
-        if (!BuiltIn.Value.TryGetValue(Normalize(name), out var displayName))
+        if (!BuiltIn.Value.TryGetValue(Normalize(name), out string? displayName))
         {
             return null;
         }
 
-        using var stream = typeof(ThemeCatalog).Assembly.GetManifestResourceStream(ResourcePrefix + displayName)!;
+        using Stream stream = typeof(ThemeCatalog).Assembly.GetManifestResourceStream(ResourcePrefix + displayName)!;
         using var reader = new StreamReader(stream);
         return reader.ReadToEnd();
     }
@@ -109,11 +109,11 @@ public static class ThemeCatalog
     private static Dictionary<string, string> IndexBuiltIn()
     {
         var index = new Dictionary<string, string>();
-        foreach (var resource in typeof(ThemeCatalog).Assembly.GetManifestResourceNames())
+        foreach (string resource in typeof(ThemeCatalog).Assembly.GetManifestResourceNames())
         {
             if (resource.StartsWith(ResourcePrefix, StringComparison.Ordinal))
             {
-                var display = resource[ResourcePrefix.Length..];
+                string display = resource[ResourcePrefix.Length..];
                 index.TryAdd(Normalize(display), display);
             }
         }
