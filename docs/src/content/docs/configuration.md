@@ -20,7 +20,7 @@ If your shell reports its directory, a new tab or split opens where you were. Sh
   ```
 
 - **cmd:** set `PROMPT` to include the sequence: `prompt $E]7;file://localhost/$P$E\$P$G` (`$E` is the escape character, `$P` the current directory).
-- **Git Bash:** add this to `~/.bashrc`: `PROMPT_COMMAND='printf "\e]7;file://%s/%s" "$HOSTNAME" "$(cygpath -m "$PWD")"'`. Plain bash inside WSL reports Linux paths, which wintty cannot use as a Windows directory (see above).
+- **Git Bash:** add this to `~/.bashrc`: `PROMPT_COMMAND='printf "\e]7;file://%s/%s\a" "$HOSTNAME" "$(cygpath -m "$PWD")"'`. Plain bash inside WSL reports Linux paths, which wintty cannot use as a Windows directory (see above).
 
 ## File format
 
