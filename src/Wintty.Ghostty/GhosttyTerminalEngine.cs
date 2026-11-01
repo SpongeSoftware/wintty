@@ -36,6 +36,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private const int ScrollViewportBottom = 1;
     private const int ScrollViewportDelta = 2;
     private const int MaxEncodedMouseLength = 64;
+    private const int PasteMarkerAllowance = 32;
 
     private readonly TerminalEngineOptions _defaults;
 
@@ -242,6 +243,38 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     }
 
     /// <inheritdoc />
+    public bool BracketedPaste
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return NativeModes.IsSet(_handle, NativeModes.BracketedPaste);
+        }
+    }
+
+    /// <inheritdoc />
+    public unsafe byte[] EncodePaste(string text)
+    {
+        ArgumentNullException.ThrowIfNull(text);
+        ThrowIfDisposed();
+
+        // The encoder rewrites its input in place, and may add the bracketed-paste markers, so work on a copy.
+        var data = Encoding.UTF8.GetBytes(text);
+        var output = new byte[data.Length + PasteMarkerAllowance];
+        nuint written;
+        int status;
+        fixed (byte* dataPointer = data)
+        fixed (byte* outputPointer = output)
+        {
+            status = _native.PasteEncode(
+                (IntPtr)dataPointer, (nuint)data.Length, BracketedPaste, (IntPtr)outputPointer, (nuint)output.Length, out written);
+        }
+
+        ThrowIfFailed(status, "encode paste");
+        return output[..(int)written];
+    }
+
+    /// <inheritdoc />
     public void ScrollViewport(int rows)
     {
         ThrowIfDisposed();
@@ -280,9 +313,11 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             _native.RenderStateGetHandle(_renderState, GhosttyNativeLibrary.RenderStateDataRowIterator, ref iterator),
             "begin row iteration");
 
+        var wrapped = new bool[rows];
         var row = 0;
         while (row < rows && _native.RowIteratorNext(iterator))
         {
+            wrapped[row] = IsWrapContinuation(iterator);
             var rowCells = _rowCells;
             ThrowIfFailed(_native.RowGetCells(iterator, ref rowCells), "read row cells");
             for (var column = 0; column < columns; column++)
@@ -299,7 +334,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             cells[index] = new TerminalCell(string.Empty, defaultForeground, defaultBackground);
         }
 
-        return new TerminalSnapshot(columns, rows, cells, ReadCursor(), defaultForeground, defaultBackground, ReadScrollbar());
+        return new TerminalSnapshot(columns, rows, cells, ReadCursor(), defaultForeground, defaultBackground, ReadScrollbar(), wrapped);
     }
 
     /// <inheritdoc />
@@ -361,6 +396,12 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             ThrowIfFailed(_native.TerminalSet(_handle, TerminalOptionColorPalette, (IntPtr)pointer), "set the palette");
         }
     }
+
+    // True when the row carries on a line that was too long for the grid and so wrapped.
+    private bool IsWrapContinuation(IntPtr iterator) =>
+        _native.RowGetRaw(iterator, out var raw) == GhosttyNativeLibrary.Success
+        && _native.RowGetWrapContinuation(raw, out var value) == GhosttyNativeLibrary.Success
+        && value != 0;
 
     private ScrollbarState ReadScrollbar() =>
         _native.TerminalGetScrollbar(_handle, out var bar) == GhosttyNativeLibrary.Success

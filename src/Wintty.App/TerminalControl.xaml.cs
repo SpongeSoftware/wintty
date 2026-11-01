@@ -9,12 +9,14 @@ using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Windows.ApplicationModel.DataTransfer;
 using Windows.System;
 using DispatcherQueueTimer = Microsoft.UI.Dispatching.DispatcherQueueTimer;
 using Windows.UI;
 using Wintty.Core.Abstractions;
 using Wintty.Core.Configuration;
 using Wintty.Core.Input;
+using Wintty.Core.Selection;
 using Wintty.Core.Sessions;
 using Wintty.Ghostty;
 using Wintty.Input;
@@ -48,6 +50,13 @@ public sealed partial class TerminalControl : UserControl
     private char _pendingHighSurrogate;
     private string? _startupError;
     private MouseButton _heldButton;
+    private readonly SelectionController _selection = new();
+    private int _clickCount;
+    private long _lastClickTick;
+    private (int Column, int Row) _lastClickCell = (-1, -1);
+    private (int Column, int Row) _lastDragCell = (-1, -1);
+
+    private const int MultiClickMilliseconds = 500;
     private double _wheelRemainder;
 
     private const int WheelRowsPerNotch = 3;
@@ -353,7 +362,7 @@ public sealed partial class TerminalControl : UserControl
             return;
         }
 
-        var plan = RenderPlanner.Build(snapshot, _cursorOn || FocusState == FocusState.Unfocused);
+        var plan = RenderPlanner.Build(snapshot, _cursorOn || FocusState == FocusState.Unfocused, _selection.Current);
         var drawing = args.DrawingSession;
         var origin = (float)_config.WindowPadding;
         drawing.Clear(ToColor(plan.Background));
@@ -366,6 +375,17 @@ public sealed partial class TerminalControl : UserControl
                 run.Length * _cellWidth,
                 _cellHeight,
                 ToColor(run.Color));
+        }
+
+        // A translucent wash in the text colour keeps colours readable while marking the selection.
+        foreach (var run in plan.Selection ?? [])
+        {
+            drawing.FillRectangle(
+                origin + (run.Column * _cellWidth),
+                origin + (run.Row * _cellHeight),
+                run.Length * _cellWidth,
+                _cellHeight,
+                ToColor(snapshot.DefaultForeground, 90));
         }
 
         foreach (var run in plan.Texts)
@@ -536,6 +556,12 @@ public sealed partial class TerminalControl : UserControl
         }
 
         var modifiers = NativeKeyboard.CurrentModifiers();
+        if (action != KeyAction.Release && TryClipboardShortcut(key, modifiers))
+        {
+            e.Handled = true;
+            return;
+        }
+
         var text = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, modifiers);
         if (text is null)
         {
@@ -566,7 +592,11 @@ public sealed partial class TerminalControl : UserControl
         var unshifted = NativeKeyboard.TranslateText(virtualKey, e.KeyStatus.ScanCode, KeyModifiers.None);
         var codepoint = string.IsNullOrEmpty(unshifted) || unshifted[0] < ' ' ? 0 : char.ConvertToUtf32(unshifted, 0);
 
-        _session.SendKey(new KeyInput(key, modifiers, action, text, codepoint, consumed));
+        if (_session.SendKey(new KeyInput(key, modifiers, action, text, codepoint, consumed)) && action != KeyAction.Release)
+        {
+            ClearSelection();
+        }
+
         _cursorOn = true;
 
         // Handled so the same key does not also arrive through CharacterReceived.
@@ -601,7 +631,23 @@ public sealed partial class TerminalControl : UserControl
     {
         Focus(FocusState.Pointer);
         var button = ButtonOf(e.GetCurrentPoint(Canvas).Properties);
-        if (button == MouseButton.None || !TryReport(MouseAction.Press, button, e))
+        if (button != MouseButton.None && !TryReport(MouseAction.Press, button, e))
+        {
+            if (button == MouseButton.Left)
+            {
+                BeginSelection(e);
+                e.Handled = true;
+            }
+            else if (button == MouseButton.Middle)
+            {
+                _ = PasteAsync();
+                e.Handled = true;
+            }
+
+            return;
+        }
+
+        if (button == MouseButton.None)
         {
             return;
         }
@@ -613,6 +659,13 @@ public sealed partial class TerminalControl : UserControl
 
     private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
     {
+        if (_selection.IsDragging)
+        {
+            DragSelection(e);
+            e.Handled = true;
+            return;
+        }
+
         if (TryReport(MouseAction.Motion, _heldButton, e))
         {
             e.Handled = true;
@@ -621,6 +674,15 @@ public sealed partial class TerminalControl : UserControl
 
     private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
     {
+        if (_selection.IsDragging)
+        {
+            _selection.End();
+            Canvas.ReleasePointerCapture(e.Pointer);
+            Canvas.Invalidate();
+            e.Handled = true;
+            return;
+        }
+
         var button = _heldButton;
         _heldButton = MouseButton.None;
         Canvas.ReleasePointerCapture(e.Pointer);
@@ -695,6 +757,165 @@ public sealed partial class TerminalControl : UserControl
     private void Send(string text)
     {
         _session?.SendInput(Encoding.UTF8.GetBytes(text));
+        ClearSelection();
         _cursorOn = true;
+    }
+
+    private void ClearSelection()
+    {
+        if (_selection.Current is not null)
+        {
+            _selection.Clear();
+            Canvas.Invalidate();
+        }
+    }
+
+    // Ctrl+Shift+C / Ctrl+Shift+V, plus the classic Ctrl+Insert / Shift+Insert.
+    private bool TryClipboardShortcut(TerminalKey key, KeyModifiers modifiers)
+    {
+        var copy = (key == TerminalKey.C && modifiers.HasFlag(KeyModifiers.Control) && modifiers.HasFlag(KeyModifiers.Shift))
+            || (key == TerminalKey.Insert && modifiers == KeyModifiers.Control);
+        var paste = (key == TerminalKey.V && modifiers.HasFlag(KeyModifiers.Control) && modifiers.HasFlag(KeyModifiers.Shift))
+            || (key == TerminalKey.Insert && modifiers == KeyModifiers.Shift);
+        if (copy)
+        {
+            CopySelection();
+            return true;
+        }
+
+        if (paste)
+        {
+            _ = PasteAsync();
+            return true;
+        }
+
+        return false;
+    }
+
+    private void CopySelection()
+    {
+        if (_session is not { } session || _selection.Current is not { IsEmpty: false } selection)
+        {
+            return;
+        }
+
+        var text = session.GetSelectedText(selection);
+        if (text.Length == 0)
+        {
+            return;
+        }
+
+        var package = new DataPackage();
+        package.SetText(text);
+        Clipboard.SetContent(package);
+    }
+
+    private async Task PasteAsync()
+    {
+        try
+        {
+            var content = Clipboard.GetContent();
+            if (_session is not { } session || !content.Contains(StandardDataFormats.Text))
+            {
+                return;
+            }
+
+            var text = await content.GetTextAsync();
+            if (string.IsNullOrEmpty(text))
+            {
+                return;
+            }
+
+            // Programs that did not ask for bracketed paste would run each pasted line as a command.
+            if (_config.PasteProtection && !session.BracketedPaste && text.Contains('\n') && !await ConfirmPasteAsync(text))
+            {
+                return;
+            }
+
+            session.Paste(text);
+            ClearSelection();
+        }
+        catch (Exception ex)
+        {
+            LogError("Paste failed: " + ex);
+        }
+    }
+
+    private async Task<bool> ConfirmPasteAsync(string text)
+    {
+        var lines = text.Split('\n').Length;
+        var dialog = new ContentDialog
+        {
+            XamlRoot = XamlRoot,
+            Title = "Paste " + lines + " lines?",
+            Content = "The text contains line breaks, so the program may run each line as soon as it is pasted.",
+            PrimaryButtonText = "Paste",
+            CloseButtonText = "Cancel",
+            DefaultButton = ContentDialogButton.Close,
+        };
+        return await dialog.ShowAsync() == ContentDialogResult.Primary;
+    }
+
+    private void BeginSelection(PointerRoutedEventArgs e)
+    {
+        if (_session is not { } session || _cellWidth <= 0)
+        {
+            return;
+        }
+
+        var cell = CellUnder(e);
+        var now = Environment.TickCount64;
+        _clickCount = cell == _lastClickCell && now - _lastClickTick <= MultiClickMilliseconds ? _clickCount + 1 : 1;
+        _lastClickCell = cell;
+        _lastClickTick = now;
+        _lastDragCell = cell;
+
+        var block = NativeKeyboard.CurrentModifiers().HasFlag(KeyModifiers.Alt);
+        lock (session.SyncRoot)
+        {
+            _selection.Begin(session.Engine.CreateSnapshot(), cell.Column, cell.Row, _clickCount, block);
+        }
+
+        Canvas.CapturePointer(e.Pointer);
+        Canvas.Invalidate();
+    }
+
+    private void DragSelection(PointerRoutedEventArgs e)
+    {
+        if (_session is not { } session)
+        {
+            return;
+        }
+
+        // Dragging past the top or bottom edge scrolls the view so the selection can grow into history.
+        var y = e.GetCurrentPoint(Canvas).Position.Y;
+        if (y < _config.WindowPadding)
+        {
+            session.ScrollBy(-1);
+        }
+        else if (y > Canvas.ActualHeight - _config.WindowPadding)
+        {
+            session.ScrollBy(1);
+        }
+
+        var cell = CellUnder(e);
+        if (cell == _lastDragCell && y >= _config.WindowPadding && y <= Canvas.ActualHeight - _config.WindowPadding)
+        {
+            return;
+        }
+
+        _lastDragCell = cell;
+        lock (session.SyncRoot)
+        {
+            _selection.Drag(session.Engine.CreateSnapshot(), cell.Column, cell.Row);
+        }
+
+        Canvas.Invalidate();
+    }
+
+    private (int Column, int Row) CellUnder(PointerRoutedEventArgs e)
+    {
+        var point = e.GetCurrentPoint(Canvas).Position;
+        return CellHitTester.CellAt(point.X, point.Y, _cellWidth, _cellHeight, _config.WindowPadding, _grid.Columns, _grid.Rows);
     }
 }

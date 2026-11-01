@@ -1,4 +1,5 @@
 using Wintty.Core.Abstractions;
+using Wintty.Core.Selection;
 
 namespace Wintty.Render;
 
@@ -11,8 +12,9 @@ public static class RenderPlanner
     /// Whether the cursor is in the "on" phase of its blink; the cursor is only drawn when this and the
     /// snapshot's own visibility are both true.
     /// </param>
+    /// <param name="selection">The selected region to highlight, or <see langword="null"/> for none.</param>
     /// <returns>A plan the platform renderer can draw directly.</returns>
-    public static RenderPlan Build(TerminalSnapshot snapshot, bool cursorVisible = true)
+    public static RenderPlan Build(TerminalSnapshot snapshot, bool cursorVisible = true, TerminalSelection? selection = null)
     {
         ArgumentNullException.ThrowIfNull(snapshot);
 
@@ -35,7 +37,37 @@ public static class RenderPlanner
             texts,
             decorations,
             BuildCursor(snapshot, cursorVisible),
-            BuildScrollThumb(snapshot.Scrollbar));
+            BuildScrollThumb(snapshot.Scrollbar),
+            BuildSelection(snapshot, selection));
+    }
+
+    // Selection rows are counted from the oldest history row, so shift them into the visible grid.
+    private static List<SelectionRun> BuildSelection(TerminalSnapshot snapshot, TerminalSelection? selection)
+    {
+        var runs = new List<SelectionRun>();
+        if (selection is null || selection.IsEmpty)
+        {
+            return runs;
+        }
+
+        var offset = snapshot.Scrollbar.Offset;
+        for (var row = 0; row < snapshot.Rows; row++)
+        {
+            if (selection.SpanOnRow(offset + row, snapshot.Columns) is not var (start, end))
+            {
+                continue;
+            }
+
+            // A selection that ends on the left half of a wide character takes its right half too.
+            if (end > 0 && end < snapshot.Columns && snapshot[end, row].Width == 0)
+            {
+                end++;
+            }
+
+            runs.Add(new SelectionRun(row, start, end - start));
+        }
+
+        return runs;
     }
 
     // The thumb has a minimum height so it stays visible and grabbable in very long histories.
