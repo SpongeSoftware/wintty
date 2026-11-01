@@ -26,7 +26,7 @@ public static class ConfigLoader
             var diagnostics = parsed.Diagnostics.ToList();
             var colors = ThemeCatalog.Resolve(parsed.Config, themesDirectory, diagnostics);
             diagnostics.Sort((a, b) => a.Line.CompareTo(b.Line));
-            return new ConfigLoadResult(parsed.Config, diagnostics) { Colors = colors };
+            return new ConfigLoadResult(parsed.Config, diagnostics) { Colors = colors, Bindings = parsed.Bindings };
         }
         catch (Exception ex) when (ex is IOException or UnauthorizedAccessException)
         {

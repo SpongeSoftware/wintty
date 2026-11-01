@@ -16,6 +16,7 @@ using Windows.UI;
 using Wintty.Core.Abstractions;
 using Wintty.Core.Configuration;
 using Wintty.Core.Input;
+using Wintty.Core.Keybindings;
 using Wintty.Core.Selection;
 using Wintty.Core.Sessions;
 using Wintty.Ghostty;
@@ -31,6 +32,7 @@ namespace Wintty.App;
 public sealed partial class TerminalControl : UserControl
 {
     private WinttyConfig _config = new();
+    private IReadOnlyDictionary<KeyTrigger, TerminalAction> _bindings = new ConfigLoadResult(new WinttyConfig(), []).Bindings;
     private ConfigWatcher? _configWatcher;
     private string? _configProblems;
 
@@ -62,6 +64,7 @@ public sealed partial class TerminalControl : UserControl
 
     private const int WheelRowsPerNotch = 3;
     private const double WheelNotch = 120.0;
+    private const int ScrollJump = 1_000_000;
     private const int ResizeDelayMilliseconds = 40;
 
     /// <summary>Creates the control.</summary>
@@ -128,6 +131,7 @@ public sealed partial class TerminalControl : UserControl
     {
         var loaded = ConfigLoader.Load(ConfigLoader.DefaultPath, ThemeCatalog.DefaultUserDirectory);
         _config = loaded.Config;
+        _bindings = loaded.Bindings;
         ReportConfigProblems(loaded);
         MeasureCell();
         _grid = ComputeGrid();
@@ -188,6 +192,7 @@ public sealed partial class TerminalControl : UserControl
     private void ApplyConfig(ConfigLoadResult result)
     {
         _config = result.Config;
+        _bindings = result.Bindings;
         _session?.SetColors(result.Colors);
         ReportConfigProblems(result);
         _formats.Clear();
@@ -571,7 +576,7 @@ public sealed partial class TerminalControl : UserControl
         }
 
         var modifiers = NativeKeyboard.CurrentModifiers();
-        if (action != KeyAction.Release && TryClipboardShortcut(key, modifiers))
+        if (TryBoundAction(key, modifiers, action))
         {
             e.Handled = true;
             return;
@@ -785,26 +790,51 @@ public sealed partial class TerminalControl : UserControl
         }
     }
 
-    // Ctrl+Shift+C / Ctrl+Shift+V, plus the classic Ctrl+Insert / Shift+Insert.
-    private bool TryClipboardShortcut(TerminalKey key, KeyModifiers modifiers)
+    // Looks the key up in the bindings from the config; actions that are not built yet pass the key on to the program.
+    private bool TryBoundAction(TerminalKey key, KeyModifiers modifiers, KeyAction action)
     {
-        var copy = (key == TerminalKey.C && modifiers.HasFlag(KeyModifiers.Control) && modifiers.HasFlag(KeyModifiers.Shift))
-            || (key == TerminalKey.Insert && modifiers == KeyModifiers.Control);
-        var paste = (key == TerminalKey.V && modifiers.HasFlag(KeyModifiers.Control) && modifiers.HasFlag(KeyModifiers.Shift))
-            || (key == TerminalKey.Insert && modifiers == KeyModifiers.Shift);
-        if (copy)
+        if (!_bindings.TryGetValue(KeyTrigger.From(key, modifiers), out var bound) || !IsImplemented(bound))
         {
-            CopySelection();
-            return true;
+            return false;
         }
 
-        if (paste)
+        if (action != KeyAction.Release)
         {
-            _ = PasteAsync();
-            return true;
+            Execute(bound);
         }
 
-        return false;
+        return true;
+    }
+
+    private static bool IsImplemented(TerminalAction action) => action is
+        TerminalAction.CopyToClipboard or TerminalAction.PasteFromClipboard or TerminalAction.ScrollPageUp
+        or TerminalAction.ScrollPageDown or TerminalAction.ScrollToTop or TerminalAction.ScrollToBottom;
+
+    private void Execute(TerminalAction action)
+    {
+        switch (action)
+        {
+            case TerminalAction.CopyToClipboard:
+                CopySelection();
+                break;
+            case TerminalAction.PasteFromClipboard:
+                _ = PasteAsync();
+                break;
+            case TerminalAction.ScrollPageUp:
+                _session?.ScrollBy(-Math.Max(1, _grid.Rows - 1));
+                break;
+            case TerminalAction.ScrollPageDown:
+                _session?.ScrollBy(Math.Max(1, _grid.Rows - 1));
+                break;
+            case TerminalAction.ScrollToTop:
+                _session?.ScrollBy(-ScrollJump);
+                break;
+            case TerminalAction.ScrollToBottom:
+                _session?.ScrollToBottom();
+                break;
+        }
+
+        Canvas.Invalidate();
     }
 
     private void CopySelection()

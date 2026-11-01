@@ -34,6 +34,10 @@ public static class ConfigOptions
             "`true` or `false`. Whether the cursor blinks."),
         new("clipboard-paste-protection", Code(Defaults.PasteProtection ? "true" : "false"), true,
             "`true` or `false`. Ask before pasting text that contains line breaks into a program that has not enabled bracketed paste."),
+        new("keybind", "see [Keybindings](/wintty/keybindings/)", true,
+            "One binding per line as `trigger=action`, for example `keybind = ctrl+shift+n=new_tab`. " +
+            "Repeat the line for more. `unbind` as the action removes a default; the value `clear` drops all defaults; " +
+            "an empty value forgets every `keybind` line above it."),
         new("theme", "none", true,
             "Colour theme by name, for example `catppuccin-mocha` or `Gruvbox Dark`. See [Themes](/wintty/themes/). " +
             "Your own colour options below are layered on top of the theme."),

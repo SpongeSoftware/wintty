@@ -15,6 +15,9 @@ public sealed record WinttyConfig
     /// <summary>Default number of scrollback lines kept.</summary>
     public const int DefaultScrollbackLimit = 10_000;
 
+    /// <summary>A shared empty binding list so default configurations compare equal.</summary>
+    public static readonly IReadOnlyList<Keybindings.KeybindEntry> NoKeybinds = [];
+
     /// <summary>A shared empty palette so default configurations compare equal.</summary>
     public static readonly IReadOnlyDictionary<int, Abstractions.TerminalColor> NoPalette =
         System.Collections.Frozen.FrozenDictionary<int, Abstractions.TerminalColor>.Empty;
@@ -33,6 +36,12 @@ public sealed record WinttyConfig
 
     /// <summary>Palette entries (index 0 to 255) that override the theme. Applied live.</summary>
     public IReadOnlyDictionary<int, Abstractions.TerminalColor> Palette { get; init; } = NoPalette;
+
+    /// <summary>Key bindings written in the file, in order. Applied live.</summary>
+    public IReadOnlyList<Keybindings.KeybindEntry> Keybinds { get; init; } = NoKeybinds;
+
+    /// <summary>Whether the file asked to drop the default key bindings first.</summary>
+    public bool ClearDefaultKeybinds { get; init; }
 
     /// <summary>The colours set directly in the file, before any theme is applied.</summary>
     public Abstractions.TerminalColorScheme ExplicitColors => new(Foreground, Background, CursorColor, Palette);

@@ -13,6 +13,8 @@ public partial class ConfigReferenceTests
 {
     private const string Begin = "<!-- BEGIN GENERATED OPTIONS -->";
     private const string End = "<!-- END GENERATED OPTIONS -->";
+    private const string KeysBegin = "<!-- BEGIN GENERATED KEYBINDINGS -->";
+    private const string KeysEnd = "<!-- END GENERATED KEYBINDINGS -->";
 
     [GeneratedRegex("case \"([a-z-]+)\":")]
     private static partial Regex CaseLabel();
@@ -83,6 +85,30 @@ public partial class ConfigReferenceTests
 
         Assert.Equal(ConfigOptions.All.Count + 2, table.TrimEnd().Split('\n').Length);
         Assert.StartsWith("| Option | Default | Applies | Description |", table, StringComparison.Ordinal);
+    }
+
+    [Fact]
+    public void KeybindingsPageMatchesTheGeneratedReference()
+    {
+        var path = Path.Combine(RepositoryRoot(), "docs", "src", "content", "docs", "keybindings.md");
+        var page = File.ReadAllText(path).Replace("\r\n", "\n", StringComparison.Ordinal);
+        var start = page.IndexOf(KeysBegin, StringComparison.Ordinal);
+        var finish = page.IndexOf(KeysEnd, StringComparison.Ordinal);
+        Assert.True(start >= 0 && finish > start, "keybindings.md needs the generated-keybindings markers.");
+
+        var expected = page[..(start + KeysBegin.Length)] + "\n" + Wintty.Core.Keybindings.Keybinds.RenderReference() + page[finish..];
+        if (expected == page)
+        {
+            return;
+        }
+
+        if (Environment.GetEnvironmentVariable("WINTTY_UPDATE_DOCS") == "1")
+        {
+            File.WriteAllText(path, expected);
+            return;
+        }
+
+        Assert.Fail("docs/src/content/docs/keybindings.md is out of date. Run the tests with WINTTY_UPDATE_DOCS=1 to regenerate it.");
     }
 
     [Fact]

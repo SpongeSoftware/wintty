@@ -1,5 +1,6 @@
 using System.Globalization;
 using Wintty.Core.Abstractions;
+using Wintty.Core.Keybindings;
 
 namespace Wintty.Core.Configuration;
 
@@ -18,7 +19,9 @@ public static class ConfigParser
     {
         ArgumentNullException.ThrowIfNull(text);
         var (config, diagnostics) = Run(text, lenient: false);
-        return new ConfigLoadResult(config, diagnostics) { Colors = config.ExplicitColors };
+        var bindings = Keybinds.Resolve(config.Keybinds, config.ClearDefaultKeybinds, diagnostics);
+        diagnostics.Sort((a, b) => a.Line.CompareTo(b.Line));
+        return new ConfigLoadResult(config, diagnostics) { Colors = config.ExplicitColors, Bindings = bindings };
     }
 
     /// <summary>
@@ -90,6 +93,28 @@ public static class ConfigParser
         return true;
     }
 
+    // Bindings accumulate; an empty value forgets them all, and "clear" also drops the built-in defaults.
+    private static WinttyConfig ApplyKeybind(WinttyConfig config, string value, int line, out string? error)
+    {
+        error = null;
+        if (value.Length == 0)
+        {
+            return config with { Keybinds = WinttyConfig.NoKeybinds, ClearDefaultKeybinds = false };
+        }
+
+        if (string.Equals(value, "clear", StringComparison.OrdinalIgnoreCase))
+        {
+            return config with { Keybinds = WinttyConfig.NoKeybinds, ClearDefaultKeybinds = true };
+        }
+
+        if (!Keybinds.TryParseEntry(value, line, out var entry, out error))
+        {
+            return config;
+        }
+
+        return config with { Keybinds = [.. config.Keybinds, entry!] };
+    }
+
     private static string Unquote(string value) =>
         value.Length >= 2 && value[0] == '"' && value[^1] == '"' ? value[1..^1] : value;
 
@@ -117,6 +142,8 @@ public static class ConfigParser
             case "clipboard-paste-protection":
                 return TryFlag(value, defaults.PasteProtection, key, out var protection, out error)
                     ? config with { PasteProtection = protection } : config;
+            case "keybind":
+                return ApplyKeybind(config, value, line, out error);
             case "theme":
                 return config with { Theme = value.Length == 0 ? null : value, ThemeLine = value.Length == 0 ? 0 : line };
             case "foreground":
