@@ -71,13 +71,35 @@ internal sealed class FakeTerminalEngine : ITerminalEngine
         return EncodedKey;
     }
 
+    public List<MouseInput> MouseInputs { get; } = [];
+
+    public byte[] EncodedMouse { get; set; } = [];
+
+    public bool MouseTracking { get; set; }
+
+    public byte[] EncodeMouse(MouseInput input)
+    {
+        MouseInputs.Add(input);
+        return EncodedMouse;
+    }
+
+    public List<int> Scrolls { get; } = [];
+
+    public int ScrolledToBottom { get; private set; }
+
+    public ScrollbarState Scrollbar { get; set; }
+
+    public void ScrollViewport(int rows) => Scrolls.Add(rows);
+
+    public void ScrollViewportToBottom() => ScrolledToBottom++;
+
     public TerminalSnapshot CreateSnapshot()
     {
         var black = new TerminalColor(0, 0, 0);
         var white = new TerminalColor(255, 255, 255);
         var cells = new TerminalCell[Columns * Rows];
         Array.Fill(cells, new TerminalCell(string.Empty, white, black));
-        return new TerminalSnapshot(Columns, Rows, cells, new CursorState(0, 0, true, CursorStyle.Block), white, black);
+        return new TerminalSnapshot(Columns, Rows, cells, new CursorState(0, 0, true, CursorStyle.Block), white, black, Scrollbar);
     }
 
     public void Dispose() => IsDisposed = true;

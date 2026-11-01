@@ -79,6 +79,7 @@ public readonly record struct CursorShape(int Row, int Column, int CellCount, Cu
 /// <param name="Texts">Text runs.</param>
 /// <param name="Decorations">Underlines, strikethroughs and overlines.</param>
 /// <param name="Cursor">The cursor to draw, or <see langword="null"/> when hidden.</param>
+/// <param name="ScrollThumb">The scroll position indicator, or <see langword="null"/> when the view is at the bottom.</param>
 public sealed record RenderPlan(
     int Columns,
     int Rows,
@@ -86,4 +87,12 @@ public sealed record RenderPlan(
     IReadOnlyList<BackgroundRun> Backgrounds,
     IReadOnlyList<TextRun> Texts,
     IReadOnlyList<DecorationRun> Decorations,
-    CursorShape? Cursor);
+    CursorShape? Cursor,
+    ScrollThumb? ScrollThumb = null);
+
+/// <summary>
+/// A scroll position indicator, as fractions of the grid height so the drawing layer can place it at any scale.
+/// </summary>
+/// <param name="Top">Where the thumb starts, from 0 (top) to 1 (bottom).</param>
+/// <param name="Height">How tall the thumb is, from 0 to 1.</param>
+public readonly record struct ScrollThumb(double Top, double Height);

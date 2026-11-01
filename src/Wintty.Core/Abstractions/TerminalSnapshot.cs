@@ -122,6 +122,7 @@ public sealed class TerminalSnapshot
     /// <param name="cursor">Cursor state.</param>
     /// <param name="defaultForeground">Default text colour.</param>
     /// <param name="defaultBackground">Default background colour.</param>
+    /// <param name="scrollbar">Where the visible rows sit within the history.</param>
     /// <exception cref="ArgumentOutOfRangeException">A dimension is not positive.</exception>
     /// <exception cref="ArgumentException">The cell count does not match the dimensions.</exception>
     public TerminalSnapshot(
@@ -130,7 +131,8 @@ public sealed class TerminalSnapshot
         TerminalCell[] cells,
         CursorState cursor,
         TerminalColor defaultForeground,
-        TerminalColor defaultBackground)
+        TerminalColor defaultBackground,
+        ScrollbarState scrollbar = default)
     {
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(columns, 0);
         ArgumentOutOfRangeException.ThrowIfLessThanOrEqual(rows, 0);
@@ -146,6 +148,7 @@ public sealed class TerminalSnapshot
         Cursor = cursor;
         DefaultForeground = defaultForeground;
         DefaultBackground = defaultBackground;
+        Scrollbar = scrollbar;
     }
 
     /// <summary>Grid width in cells.</summary>
@@ -156,6 +159,9 @@ public sealed class TerminalSnapshot
 
     /// <summary>Cursor state.</summary>
     public CursorState Cursor { get; }
+
+    /// <summary>Where the visible rows sit within the history, for drawing a scroll indicator.</summary>
+    public ScrollbarState Scrollbar { get; }
 
     /// <summary>Default text colour.</summary>
     public TerminalColor DefaultForeground { get; }

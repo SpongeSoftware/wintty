@@ -47,6 +47,11 @@ public sealed partial class TerminalControl : UserControl
     private int _invalidatePending;
     private char _pendingHighSurrogate;
     private string? _startupError;
+    private MouseButton _heldButton;
+    private double _wheelRemainder;
+
+    private const int WheelRowsPerNotch = 3;
+    private const double WheelNotch = 120.0;
 
     /// <summary>Creates the control.</summary>
     public TerminalControl()
@@ -65,6 +70,11 @@ public sealed partial class TerminalControl : UserControl
         KeyDown += OnKeyDown;
         KeyUp += OnKeyUp;
         CharacterReceived += OnCharacterReceived;
+        Canvas.PointerPressed += OnPointerPressed;
+        Canvas.PointerMoved += OnPointerMoved;
+        Canvas.PointerReleased += OnPointerReleased;
+        Canvas.PointerCaptureLost += (_, _) => _heldButton = MouseButton.None;
+        Canvas.PointerWheelChanged += OnPointerWheelChanged;
         Loaded += async (_, _) => await StartAsync();
         Unloaded += (_, _) => Shutdown();
     }
@@ -390,10 +400,31 @@ public sealed partial class TerminalControl : UserControl
             DrawCursor(drawing, cursor, origin);
         }
 
+        if (plan.ScrollThumb is { } thumb)
+        {
+            DrawScrollThumb(drawing, thumb);
+        }
+
         if (_configProblems is not null)
         {
             DrawConfigProblems(drawing);
         }
+    }
+
+    // A slim translucent bar on the right edge while the view is scrolled back.
+    private void DrawScrollThumb(CanvasDrawingSession drawing, ScrollThumb thumb)
+    {
+        const float width = 6f;
+        const float margin = 2f;
+        var height = (float)Canvas.ActualHeight;
+        drawing.FillRoundedRectangle(
+            (float)Canvas.ActualWidth - width - margin,
+            (float)(thumb.Top * height),
+            width,
+            (float)(thumb.Height * height),
+            width / 2,
+            width / 2,
+            Color.FromArgb(150, 160, 160, 160));
     }
 
     // A banner along the bottom so a mistyped config line is noticed without opening the log.
@@ -564,6 +595,101 @@ public sealed partial class TerminalControl : UserControl
         _pendingHighSurrogate = ' ';
         Send(text);
         e.Handled = true;
+    }
+
+    private void OnPointerPressed(object sender, PointerRoutedEventArgs e)
+    {
+        Focus(FocusState.Pointer);
+        var button = ButtonOf(e.GetCurrentPoint(Canvas).Properties);
+        if (button == MouseButton.None || !TryReport(MouseAction.Press, button, e))
+        {
+            return;
+        }
+
+        _heldButton = button;
+        Canvas.CapturePointer(e.Pointer);
+        e.Handled = true;
+    }
+
+    private void OnPointerMoved(object sender, PointerRoutedEventArgs e)
+    {
+        if (TryReport(MouseAction.Motion, _heldButton, e))
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void OnPointerReleased(object sender, PointerRoutedEventArgs e)
+    {
+        var button = _heldButton;
+        _heldButton = MouseButton.None;
+        Canvas.ReleasePointerCapture(e.Pointer);
+        if (button != MouseButton.None && TryReport(MouseAction.Release, button, e))
+        {
+            e.Handled = true;
+        }
+    }
+
+    private void OnPointerWheelChanged(object sender, PointerRoutedEventArgs e)
+    {
+        if (_session is not { } session)
+        {
+            return;
+        }
+
+        var properties = e.GetCurrentPoint(Canvas).Properties;
+        var modifiers = NativeKeyboard.CurrentModifiers();
+        _wheelRemainder += properties.MouseWheelDelta / WheelNotch;
+        var notches = (int)_wheelRemainder;
+        if (notches == 0)
+        {
+            return;
+        }
+
+        _wheelRemainder -= notches;
+        var reporting = session.MouseTracking && !modifiers.HasFlag(KeyModifiers.Shift);
+        if (reporting)
+        {
+            var button = properties.IsHorizontalMouseWheel
+                ? (notches > 0 ? MouseButton.WheelRight : MouseButton.WheelLeft)
+                : (notches > 0 ? MouseButton.WheelUp : MouseButton.WheelDown);
+            for (var step = 0; step < Math.Abs(notches); step++)
+            {
+                TryReport(MouseAction.Press, button, e);
+            }
+        }
+        else if (!properties.IsHorizontalMouseWheel)
+        {
+            // Wheel up (positive) moves towards older output, which is a negative row delta.
+            session.ScrollBy(-notches * WheelRowsPerNotch);
+            Canvas.Invalidate();
+        }
+
+        e.Handled = true;
+    }
+
+    private static MouseButton ButtonOf(PointerPointProperties properties) =>
+        properties.IsLeftButtonPressed ? MouseButton.Left
+        : properties.IsRightButtonPressed ? MouseButton.Right
+        : properties.IsMiddleButtonPressed ? MouseButton.Middle
+        : MouseButton.None;
+
+    // Sends a mouse report when the program asked for them. Holding Shift bypasses reporting.
+    private bool TryReport(MouseAction action, MouseButton button, PointerRoutedEventArgs e)
+    {
+        var modifiers = NativeKeyboard.CurrentModifiers();
+        if (_session is not { } session || _cellPixels.Width <= 0 || modifiers.HasFlag(KeyModifiers.Shift))
+        {
+            return false;
+        }
+
+        // Positions are sent in physical pixels relative to the grid, matching the cell size the engine was given.
+        var point = e.GetCurrentPoint(Canvas).Position;
+        var x = (point.X - _config.WindowPadding) / _cellWidth * _cellPixels.Width;
+        var y = (point.Y - _config.WindowPadding) / _cellHeight * _cellPixels.Height;
+        x = Math.Clamp(x, 0, (_grid.Columns * _cellPixels.Width) - 1);
+        y = Math.Clamp(y, 0, (_grid.Rows * _cellPixels.Height) - 1);
+        return session.SendMouse(new MouseInput(action, button, x, y, modifiers));
     }
 
     private void Send(string text)

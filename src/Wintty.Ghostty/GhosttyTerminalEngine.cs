@@ -20,6 +20,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private IntPtr _rowCells;
     private IntPtr _keyEncoder;
     private IntPtr _keyEvent;
+    private IntPtr _mouseEncoder;
+    private IntPtr _mouseEvent;
     private readonly GhosttyNativeLibrary.WritePtyCallback _writePtyCallback;
     private readonly GhosttyNativeLibrary.SizeCallback _sizeCallback;
     private int _cellWidthPixels;
@@ -29,6 +31,11 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     private const int TerminalOptionColorCursor = 13;
     private const int TerminalOptionColorPalette = 14;
     private const int RenderStateDataColorCursor = 7;
+    private const int MouseEncoderOptionSize = 2;
+    private const int MouseEncoderOptionTrackLastCell = 4;
+    private const int ScrollViewportBottom = 1;
+    private const int ScrollViewportDelta = 2;
+    private const int MaxEncodedMouseLength = 64;
 
     private readonly TerminalEngineOptions _defaults;
 
@@ -68,6 +75,11 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             ThrowIfFailed(native.RowCellsNew(out _rowCells), "create row cells");
             ThrowIfFailed(native.KeyEncoderNew(out _keyEncoder), "create key encoder");
             ThrowIfFailed(native.KeyEventNew(out _keyEvent), "create key event");
+            ThrowIfFailed(native.MouseEncoderNew(out _mouseEncoder), "create mouse encoder");
+            ThrowIfFailed(native.MouseEventNew(out _mouseEvent), "create mouse event");
+
+            // Report a drag once per cell rather than once per pixel.
+            native.MouseEncoderSetByteOption(_mouseEncoder, MouseEncoderOptionTrackLastCell, 1);
         }
         catch
         {
@@ -174,6 +186,82 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
     }
 
     /// <inheritdoc />
+    public bool MouseTracking
+    {
+        get
+        {
+            ThrowIfDisposed();
+            return _native.TerminalGetMouseTracking(_handle, out var enabled) == GhosttyNativeLibrary.Success && enabled != 0;
+        }
+    }
+
+    /// <inheritdoc />
+    public unsafe byte[] EncodeMouse(MouseInput input)
+    {
+        ThrowIfDisposed();
+        if (!MouseTracking)
+        {
+            return [];
+        }
+
+        // Sync the tracking mode and report format (normal, UTF-8, SGR, urxvt, SGR-pixels) from the terminal.
+        _native.MouseEncoderSetFromTerminal(_mouseEncoder, _handle);
+        var size = new GhosttyNativeLibrary.NativeMouseEncoderSize
+        {
+            Size = (UIntPtr)sizeof(GhosttyNativeLibrary.NativeMouseEncoderSize),
+            CellWidth = (uint)Math.Max(1, _cellWidthPixels),
+            CellHeight = (uint)Math.Max(1, _cellHeightPixels),
+        };
+        size.ScreenWidth = size.CellWidth * (uint)Columns;
+        size.ScreenHeight = size.CellHeight * (uint)Rows;
+        _native.MouseEncoderSetOption(_mouseEncoder, MouseEncoderOptionSize, ref size);
+
+        _native.MouseEventSetAction(_mouseEvent, (int)input.Action);
+        if (input.Button == MouseButton.None)
+        {
+            _native.MouseEventClearButton(_mouseEvent);
+        }
+        else
+        {
+            _native.MouseEventSetButton(_mouseEvent, (int)input.Button);
+        }
+
+        _native.MouseEventSetMods(_mouseEvent, GhosttyKeyMap.ToNative(input.Modifiers));
+        _native.MouseEventSetPosition(_mouseEvent, new GhosttyNativeLibrary.NativeMousePosition { X = (float)input.X, Y = (float)input.Y });
+
+        Span<byte> buffer = stackalloc byte[MaxEncodedMouseLength];
+        nuint written;
+        int status;
+        fixed (byte* bufferPointer = buffer)
+        {
+            status = _native.MouseEncoderEncode(_mouseEncoder, _mouseEvent, (IntPtr)bufferPointer, (nuint)buffer.Length, out written);
+        }
+
+        ThrowIfFailed(status, "encode mouse event");
+        return buffer[..(int)written].ToArray();
+    }
+
+    /// <inheritdoc />
+    public void ScrollViewport(int rows)
+    {
+        ThrowIfDisposed();
+        _native.ScrollViewport(
+            _handle,
+            new GhosttyNativeLibrary.TerminalScrollViewport
+            {
+                Tag = ScrollViewportDelta,
+                Value = new GhosttyNativeLibrary.TerminalScrollViewportValue { Delta = (IntPtr)rows },
+            });
+    }
+
+    /// <inheritdoc />
+    public void ScrollViewportToBottom()
+    {
+        ThrowIfDisposed();
+        _native.ScrollViewport(_handle, new GhosttyNativeLibrary.TerminalScrollViewport { Tag = ScrollViewportBottom });
+    }
+
+    /// <inheritdoc />
     public TerminalSnapshot CreateSnapshot()
     {
         ThrowIfDisposed();
@@ -211,7 +299,7 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             cells[index] = new TerminalCell(string.Empty, defaultForeground, defaultBackground);
         }
 
-        return new TerminalSnapshot(columns, rows, cells, ReadCursor(), defaultForeground, defaultBackground);
+        return new TerminalSnapshot(columns, rows, cells, ReadCursor(), defaultForeground, defaultBackground, ReadScrollbar());
     }
 
     /// <inheritdoc />
@@ -223,6 +311,8 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             return;
         }
 
+        FreeAndClear(ref _mouseEvent, _native.MouseEventFree);
+        FreeAndClear(ref _mouseEncoder, _native.MouseEncoderFree);
         FreeAndClear(ref _keyEvent, _native.KeyEventFree);
         FreeAndClear(ref _keyEncoder, _native.KeyEncoderFree);
         FreeAndClear(ref _rowCells, _native.RowCellsFree);
@@ -271,6 +361,11 @@ internal sealed class GhosttyTerminalEngine : ITerminalEngine
             ThrowIfFailed(_native.TerminalSet(_handle, TerminalOptionColorPalette, (IntPtr)pointer), "set the palette");
         }
     }
+
+    private ScrollbarState ReadScrollbar() =>
+        _native.TerminalGetScrollbar(_handle, out var bar) == GhosttyNativeLibrary.Success
+            ? new ScrollbarState((long)bar.Total, (long)bar.Offset, (long)bar.Length)
+            : ScrollbarState.None;
 
     private unsafe void SetDefaultColor(int option, TerminalColor color)
     {

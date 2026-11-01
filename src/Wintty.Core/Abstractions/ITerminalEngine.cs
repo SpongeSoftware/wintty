@@ -38,6 +38,24 @@ public interface ITerminalEngine : IDisposable
     /// <returns>The bytes to send to the program; empty when the event produces no output.</returns>
     byte[] EncodeKey(Input.KeyInput input);
 
+    /// <summary>
+    /// Encodes a mouse event into the report the running program asked for. Returns nothing when the program
+    /// has not enabled mouse reporting.
+    /// </summary>
+    /// <param name="input">The mouse event, positioned in pixels within the cell grid.</param>
+    /// <returns>The bytes to send to the program; empty when mouse reporting is off or the event is not reported.</returns>
+    byte[] EncodeMouse(Input.MouseInput input);
+
+    /// <summary>Gets a value indicating whether the program has asked for mouse reports.</summary>
+    bool MouseTracking { get; }
+
+    /// <summary>Scrolls the visible rows through the history.</summary>
+    /// <param name="rows">Rows to move; negative scrolls up towards older output.</param>
+    void ScrollViewport(int rows);
+
+    /// <summary>Returns the view to the live bottom of the screen.</summary>
+    void ScrollViewportToBottom();
+
     /// <summary>Captures the current screen contents for drawing.</summary>
     /// <returns>An immutable snapshot; safe to use after further writes.</returns>
     TerminalSnapshot CreateSnapshot();
