@@ -42,6 +42,21 @@ public enum TerminalAction
     /// <summary>Make the focused pane fill the tab, or put it back.</summary>
     ToggleSplitZoom,
 
+    /// <summary>Move the divider next to the focused pane to the left.</summary>
+    ResizePaneLeft,
+
+    /// <summary>Move the divider next to the focused pane to the right.</summary>
+    ResizePaneRight,
+
+    /// <summary>Move the divider next to the focused pane up.</summary>
+    ResizePaneUp,
+
+    /// <summary>Move the divider next to the focused pane down.</summary>
+    ResizePaneDown,
+
+    /// <summary>Give every split in the tab an equal share.</summary>
+    EqualizeSplits,
+
     /// <summary>Scroll the history up by one screen.</summary>
     ScrollPageUp,
 

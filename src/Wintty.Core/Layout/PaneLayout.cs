@@ -133,6 +133,58 @@ public static class PaneLayout
         }
     }
 
+    /// <summary>The smallest share of a split either side may be given.</summary>
+    public const double MinimumRatio = 0.1;
+
+    /// <summary>Moves the divider next to a pane, making one side larger and the other smaller.</summary>
+    /// <param name="root">The tree.</param>
+    /// <param name="target">The pane whose surrounding divider moves: the nearest split on the matching axis.</param>
+    /// <param name="direction">Which way the divider moves.</param>
+    /// <param name="amount">How far to move it, as a share of the split, between 0 and 1.</param>
+    /// <returns>The new tree, or <paramref name="root"/> unchanged when there is no divider to move.</returns>
+    public static PaneNode Resize(PaneNode root, PaneId target, FocusDirection direction, double amount)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        var wanted = direction is FocusDirection.Left or FocusDirection.Right ? SplitDirection.Right : SplitDirection.Down;
+        var sign = direction is FocusDirection.Right or FocusDirection.Down ? 1 : -1;
+        return ResizeIn(root, target, wanted, sign * amount) ?? root;
+    }
+
+    /// <summary>Gives every split an equal share.</summary>
+    /// <param name="root">The tree.</param>
+    /// <returns>The new tree.</returns>
+    public static PaneNode Equalize(PaneNode root)
+    {
+        ArgumentNullException.ThrowIfNull(root);
+        return root is PaneSplit split
+            ? split with { Ratio = 0.5, First = Equalize(split.First), Second = Equalize(split.Second) }
+            : root;
+    }
+
+    // Returns null when this subtree holds no suitable divider, so the caller can try further up.
+    private static PaneNode? ResizeIn(PaneNode node, PaneId target, SplitDirection wanted, double delta)
+    {
+        if (node is not PaneSplit split || !Leaves(split).Contains(target))
+        {
+            return null;
+        }
+
+        // Prefer the innermost matching divider around the target.
+        var inFirst = Leaves(split.First).Contains(target);
+        var inner = ResizeIn(inFirst ? split.First : split.Second, target, wanted, delta);
+        if (inner is not null)
+        {
+            return inFirst ? split with { First = inner } : split with { Second = inner };
+        }
+
+        if (split.Direction != wanted)
+        {
+            return null;
+        }
+
+        return split with { Ratio = Math.Clamp(split.Ratio + delta, MinimumRatio, 1 - MinimumRatio) };
+    }
+
     /// <summary>Works out where each pane goes.</summary>
     /// <param name="root">The tree.</param>
     /// <param name="bounds">The area to fill.</param>
