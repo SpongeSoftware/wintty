@@ -5,7 +5,7 @@ description: Testing, documentation, layering and dependency rules for wintty.
 
 ## Testing
 
-- The goal is **full test coverage**. Coverage is collected with `coverlet` and enforced in CI with a line-coverage threshold (currently 90%) that only ratchets upward.
+- The goal is **full test coverage**. Coverage is collected with `coverlet` and enforced in CI with a line-coverage threshold (currently 95%) that only ratchets upward.
 - Logic lives in testable libraries (`Wintty.Core`, `Wintty.Ghostty`, `Wintty.Render`). `Wintty.App` stays thin (views and wiring only).
 - Anything that touches Windows, the GPU, ConPTY or the native library sits behind an interface so it can be faked in unit tests; real integration tests are tagged separately.
 
@@ -26,3 +26,9 @@ All access to libghostty-vt (or the `LibGhostty.Net` NuGet package) goes through
 ## Language and runtime
 
 wintty targets **.NET 10** (LTS). C# union types arrive with C# 15 / .NET 11; we will adopt them after .NET 11 ships (see the migration notes in the repository `CONTRIBUTING.md`).
+
+## Coverage scope and exclusions
+
+The gate measures the assemblies the test project references: `Wintty.Core`, `Wintty.Ghostty`, `Wintty.Render` and `Wintty.Input`. `Wintty.App` (the WinUI shell: `TerminalControl`, `MainWindow`, native keyboard calls) is deliberately outside it because it needs a window and a GPU. Logic that can be tested without them belongs in the libraries; the shell only wires it up. Selection, scrolling, mouse encoding, resize debouncing and hit testing already live there. What remains in the shell is pointer, keyboard and clipboard glue, the blink timer, title handling and startup error reporting, which is checked by hand against the real window.
+
+Within the measured assemblies nothing is excluded from coverage.
